@@ -1,0 +1,15 @@
+Package: FPAT
+Type: Package
+Title: Fisheries Performance Assessment Toolkit
+Version: 0.1.0
+Authors@R: c(
+    person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")),
+    person("Adrian", "Hordyk", , "adrian@bluematterscience.com", role="aut"))
+Maintainer: Tom Carruthers <tom@bluematterscience.com>
+Description: A Shiny App that links the Fisheries Performance Indicators (FPI) to the operating models and management procedures of openMSE
+License: GPL-3
+Depends:
+    R (>= 4.0.1),
+    MSEtool
+Encoding: UTF-8
+LazyData: true
