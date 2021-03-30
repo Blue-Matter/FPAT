@@ -1,0 +1,76 @@
+---
+title: "Fisheries Performance Assessment Toolkit"
+subtitle: 'User Manual'
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    toc_depth: 2
+    toc_float: true
+
+theme: bootstrap
+author:
+- Tom Carruthers <tom@bluematterscience.com>
+- Adrian Hordyk <adrian@bluematterscience.com>
+---
+
+
+<div class="frame">
+<br>
+<img src="img/logo/fao.png" width="150" align="left" style="padding-right: 25px;">
+<img src="img/logo/uw.png" width="150" align="left" style="padding-right: 25px;">
+<img src="img/logo/bm.png" width="150" align="left" style="padding-right: 25px;">
+
+<br><br><br><br><br><br><br><br>
+
+</div>
+
+
+# Introduction
+The Fisheries Performance Assessment Toolkit (FPAT) is a browser-based application designed to evaluate the ecological, economic, and social performance of a wide range of fisheries. 
+
+FPAT includes two tools:
+
+1. [Fisheries Performance Indicators](https://www.fpilab.org/): a tool designed to determine how fisheries management systems are performing in order to achieve community, economic, and ecological sustainability.
+2. [openMSE](https://openmse.com/): an open-source framework for evaluating the performance of alternative modes of management for a fishery.
+
+# FPAT Input File
+The FPAT input file is a specially formatted Excel (.xlsx) workbook, populated with fishery performance indicators and as much fishery data (e.g., catches, estimates of biological parameters) that is available. 
+
+See the [FPAT Data Manual]() for instruction on collecting the fishery data used by FPAT and entering the data into the FPAT input file. 
+
+
+# Overview of the FPAT App
+
+## Load the FPAT Input File
+The first step in using FPAT is to upload the FPAT input file into the FPAT app. Users also have the option to select from a list of example FPAT case studies.
+
+## Building the Operating Model
+Once the FPAT data is loaded, FPAT will attempt to build a Operating Model based on the FPAT fishery data.
+
+A Operating Model is a mathematical model that describes the characteristics of the fishery. FPAT uses the fishery data to re-construct the history of the fishery, including the exploitation pattern (how heavily the stock has been fished over time?) and the trajectory of the stock biomass (what is the current stock biomass relative to its size before fishing?). 
+
+
+## Examine the Fishery Data
+Users can explore the fishery data through a set of plots, including:
+
+- summary of the FPI scores
+- predicted fishery dynamics in the operating model
+- summary of the stock's biological parameters
+
+## Evaluate Management Options
+The Operating Model is used to project the population forward in time and test various alternative management approaches to identify which mode of management (e.g., size limit, spatial closure, or catch limit) is most suitable for maximizing the benefits from the fishery.
+
+Users can select from a wide range of management approaches included in openMSE, or construct their own customized management approach to be evaluated in FPAT.
+
+## Explore Results
+The triple-bottom line results can be examined in a series of plots and tables.
+
+More information to be added.
+
+
+
+# Additional Material
+
+

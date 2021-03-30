@@ -477,274 +477,274 @@ importFPI <- function(FPIfile) {
   AM("------------- New OM made --------------")
   MadeOM(1)
 } # #end of loaded OM or not
-OM1 # OM
+# OM1 # OM
 
 
 
 
-
-
-
-  MERA_Import <- list()
-
-  # ---- Fishery Questions ----
-  # F1
-  MERA_Import$Des<-list()
-  MERA_Import$Des$Name <- Data@Common_Name
-  MERA_Import$Des$Species <- Data@Species
-  MERA_Import$Des$Region <- Data@Region
-  MERA_Import$Des$Agency <- NA # Not in currently in Data file
-  MERA_Import$Des$Syear <- max(Data@Year)
-  MERA_Import$Des$Lyear<- min(Data@Year)
-
-  authors <- FPI.Cover[18,2:ncol(FPI.Cover)]
-  authors <- as.matrix(authors)
-  authors <- authors[!is.na(authors)]
-  authors <- paste(authors, collapse=", ")
-  if (length(authors)<1) authors <- NA
-
-  MERA_Import$Des$Author <- authors # Not in currently in Data file
-
-  # F2
-  if (is.na(Data@Mort))  errlist$Mort<-"Natural mortality rate slot 'M' not specified in sheet '12. Fishery Data'"
-  if (is.na(Data@CV_Mort)) errlist$CV_Mort <- "Coefficient of Variation slot 'CV M' not specificed in sheet '12. Fishery Data'"
-
-  # F3
-  if (is.na(Data@Dep)) {
-    AM("Depletion slot 'Current stock depletion' not specified in sheet '12. Fishery Data' - maximum uncertainty in stock depletion has been assumed")
-  } else {
-    if (is.na(Data@CV_Dep)){
-      AM("Depletion coefficient of variation slot 'CV current stock depletion' not specified in sheet '12. Fishery Data'- maximum uncertainty in stock depletion has been assumed")
-    }
-  }
-
-  # F4
-  if (is.na(Data@steep)) {
-    # Default is last 3 options
-    AM("Resilience / steepness slot 'Steepness' not specified in sheet '12. Fishery Data' - values in the range of 0.5 to 1 are assumed")
-    PanelState$Fpanel[[3]][1:2] <- F
-  }
-
-  # F5
-  # TODO: Import from Data@Effort or answer in MERA
-  MERA_Import$eff_values<-list()
-  MeRA_Import$eff_values$df<-data.frame(x=Data@Year,y=Data@Effort,series=rep(1,length(Data@Year)))
-
-  # F6
-  F6in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[1], "[0-9]+")[[1]])
-  F6 <- rep(FALSE, 3)
-  if (1 %in% F6in) F6[1] <- TRUE
-  if (2 %in% F6in) F6[2] <- TRUE
-  if (3 %in% F6in) F6[3] <- TRUE
-  MERA_Import$F6 <- (1:3)[F6]
-
-  # F7
-  F7in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[2], "[0-9]+")[[1]])
-  F7 <- rep(FALSE, 5)
-  if (1 %in% F7in) F7[3] <- TRUE
-  if (2 %in% F7in) F7[4] <- TRUE
-  if (3 %in% F7in) F7[5] <- TRUE
-  if (4 %in% F7in) F7[2] <- TRUE
-  if (5 %in% F7in) F7[1] <- TRUE
-  MERA_Import$F7 <- (1:5)[F7]
-  if (length( MERA_Import$F7) ==0)  MERA_Import$F7 <- 3
-  MERA_Import$F7 <- min(MERA_Import$F7):max(MERA_Import$F7)
-
-  # F8
-  # Default to stable
-  MERA_Import$F8 <- 3
-
-  # F9
-  if(!is.na(Data@L50) & !is.na(Data@vbLinf)) {
-    if (is.na(Data@CV_L50)) stop("CV_L50 is NA")
-    if (is.na(Data@CV_vbLinf)) stop("CV_vbLinf is NA")
-
-    L50range <- qlnorm(quants, log(Data@L50), Data@CV_L50)
-    Linfrange <- qlnorm(quants, log(Data@vbLinf), Data@CV_vbLinf)
-    Lmrange <- (L50range/Linfrange) %>% sort()
-    group <- c(0, 0.5, 0.6, 0.7, 0.8, 1)
-    MERA_Import$F9 <- match(cut(Lmrange, group), levels(cut(Lmrange, group)))
-    MERA_Import$F9 <- min(MERA_Import$F9):max(MERA_Import$F9)
-
-  } else {
-    MERA_Import$F9 <- 1:5
-  }
-
-  # F10
-  if(!is.na(Data@LFC) & !is.na(Data@vbLinf)) {
-    if (is.na(Data@CV_LFC)) stop("CV_LFC is NA")
-    if (is.na(Data@CV_vbLinf)) stop("CV_vbLinf is NA")
-
-    LFCrange <- qlnorm(quants, log(Data@LFC), Data@CV_LFC)
-    Linfrange <- qlnorm(quants, log(Data@vbLinf), Data@CV_vbLinf)
-    Lcrange <- (LFCrange/Linfrange) %>% sort()
-    group <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
-    MERA_Import$F10 <- match(cut(Lcrange, group), levels(cut(Lcrange, group)))
-    MERA_Import$F10 <- min(MERA_Import$F10):max(MERA_Import$F10)
-
-  } else {
-    MERA_Import$F10 <- 1:5
-  }
-
-  # F11
-  if (is.na(Data@Vmaxlen)) {
-    MERA_Import$F11 <- 1
-  } else {
-    group <- c(0, 0.25, 0.75, 0.99, 2)
-    lev <- match(cut(Data@Vmaxlen, group), levels(cut(Data@Vmaxlen, group)))
-    MERA_Import$F11 <- -lev + 5
-  }
-
-  # F12
-  F12in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[3], "[0-9]+")[[1]])
-  F12 <- rep(FALSE, 5)
-  if (1 %in% F12in) F12[1] <- TRUE
-  if (2 %in% F12in) F12[2] <- TRUE
-  if (3 %in% F12in) F12[3] <- TRUE
-  if (4 %in% F12in) F12[4] <- TRUE
-  if (5 %in% F12in) F12[5] <- TRUE
-  MERA_Import$F12 <- (1:5)[F12]
-  MERA_Import$F12 <- min(MERA_Import$F12):max(MERA_Import$F12)
-
-  # F13
-  F13in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[4], "[0-9]+")[[1]])
-  F13 <- rep(FALSE, 6)
-  if (1 %in% F13in) F13[1] <- TRUE
-  if (2 %in% F13in) F13[2] <- TRUE
-  if (3 %in% F13in) F13[3] <- TRUE
-  if (4 %in% F13in) F13[4] <- TRUE
-  if (5 %in% F13in) F13[5] <- TRUE
-  if (6 %in% F13in) F13[6] <- TRUE
-  MERA_Import$F13 <- (1:6)[F13]
-  MERA_Import$F13 <- min(MERA_Import$F13):max(MERA_Import$F13)
-
-  # F14
-  # Default to moderate & high unless in Data
-  if (!is.na(Data@sigmaR)) {
-    if (is.na(Data@CV_sigmaR)) stop("CV_sigmaR is NA")
-    sigmaRrange <- qlnorm(quants, log(Data@sigmaR), Data@CV_sigmaR)
-    group <- c(0, 0.1, 0.3, 0.6, 0.9, 1E3)
-    MERA_Import$F14 <- match(cut(sigmaRrange, group), levels(cut(sigmaRrange, group)))
-  } else {
-    MERA_Import$F14 <- 3:4
-  }
-
-  # F15
-  ind <- which(FPI.Inputs[,3] == "MPAs and Sanctuaries")
-  MPAq <- FPI.Inputs[ind,6]
-
-  if (MPAq == 1) MERA_Import$F15 <- 1
-  if (MPAq == 2) MERA_Import$F15 <- 2
-  if (MPAq == 3) MERA_Import$F15 <- 3
-  if (MPAq == 4) MERA_Import$F15 <- 4
-  if (MPAq == 5) MERA_Import$F15 <- 5:7
-
-  # F16
-  F16in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[5], "[0-9]+")[[1]])
-  F16 <- rep(FALSE, 5)
-  if (1 %in% F16in) F16[1] <- TRUE
-  if (2 %in% F16in) F16[2] <- TRUE
-  if (3 %in% F16in) F16[3] <- TRUE
-  if (4 %in% F16in) F16[4] <- TRUE
-  if (5 %in% F16in) F16[5] <- TRUE
-  MERA_Import$F16 <- (1:5)[F16]
-  MERA_Import$F16 <- min(MERA_Import$F16):max(MERA_Import$F16)
-
-  # F17
-  F17in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[6], "[0-9]+")[[1]])
-  F17 <- rep(FALSE, 7)
-  if (1 %in% F17in) F17[1] <- TRUE
-  if (2 %in% F17in) F17[2] <- TRUE
-  if (3 %in% F17in) F17[3] <- TRUE
-  if (4 %in% F17in) F17[4] <- TRUE
-  if (5 %in% F17in) F17[5] <- TRUE
-  if (6 %in% F17in) F17[6] <- TRUE
-  if (7 %in% F17in) F17[7] <- TRUE
-  MERA_Import$F17 <- (1:7)[F17]
-  MERA_Import$F17 <- min(MERA_Import$F17):max(MERA_Import$F17)
-
-  # F18
-  F18in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[7], "[0-9]+")[[1]])
-  F18 <- rep(FALSE, 5)
-  if (1 %in% F18in) F18[1] <- TRUE
-  if (2 %in% F18in) F18[2] <- TRUE
-  if (3 %in% F18in) F18[3] <- TRUE
-  if (4 %in% F18in) F18[4] <- TRUE
-  if (5 %in% F18in) F18[5] <- TRUE
-  MERA_Import$F18 <- (1:5)[F18]
-  MERA_Import$F18 <- min(MERA_Import$F18):max(MERA_Import$F18)
-
-  # F19
-  # Default to unfished
-  MERA_Import$F19 <- 5
-
-  # ---- Management Questions ----
-  # M1
-  M1in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[8], "[0-9]+")[[1]])
-  M1 <- rep(FALSE, 4)
-  if (1 %in% M1in) M1[1] <- TRUE
-  if (2 %in% M1in) M1[2] <- TRUE
-  if (3 %in% M1in) M1[3] <- TRUE
-  if (4 %in% M1in) M1[4] <- TRUE
-  MERA_Import$M1 <- (1:4)[M1]
-  MERA_Import$M1 <- min(MERA_Import$M1):max(MERA_Import$M1)
-
-  # M2 & M3
-  ind <- which(FPI.Inputs[,3] == "Enforcement Capability")
-  Enforce <- FPI.Inputs[ind,6]
-
-  MERA_Import$M2 <- 4 # average taken exactly
-  # variability linked to enforcement
-  if (Enforce == 1) MERA_Import$M3 <- 5
-  if (Enforce == 2) MERA_Import$M3 <- 4:5
-  if (Enforce == 3) MERA_Import$M3 <- 3:4
-  if (Enforce == 4) MERA_Import$M3 <- 2:3
-  if (Enforce == 5) MERA_Import$M3 <- 1
-
-  # M4 - M7 - Mirror M2 & M3
-  MERA_Import$M4 <- MERA_Import$M6 <-   MERA_Import$M2
-  MERA_Import$M5 <- MERA_Import$M7 <-   MERA_Import$M3
-
-  # ---- Data Questions ----
-
-  # D1
-  MERA_Import$D1 <- NA # not required - Data already loaded in FPI+
-
-  # D2
-  D2in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[9], "[0-9]+")[[1]])
-  D2 <- rep(FALSE, 5)
-  if (1 %in% D2in) D2[1] <- TRUE
-  if (2 %in% D2in) D2[2] <- TRUE
-  if (3 %in% D2in) D2[3] <- TRUE
-  if (4 %in% D2in) D2[4] <- TRUE
-  if (5 %in% D2in) D2[5] <- TRUE
-  MERA_Import$D2 <- (1:5)[D2]
-  MERA_Import$D2 <- min(MERA_Import$D2):max(MERA_Import$D2)
-
-  # D3
-  D3in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[9], "[0-9]+")[[1]])
-  D3 <- rep(FALSE, 5)
-  if (1 %in% D3in) D3[1] <- TRUE
-  if (2 %in% D3in) D3[2] <- TRUE
-  if (3 %in% D3in) D3[3] <- TRUE
-  if (4 %in% D3in) D3[4] <- TRUE
-  if (5 %in% D3in) D3[5] <- TRUE
-  MERA_Import$D3 <- (1:5)[D3]
-  MERA_Import$D3 <- min(MERA_Import$D3):max(MERA_Import$D3)
-
-  # D4
-  ind <- which(FPI.Inputs[,3] == "Data Availability")
-  DataQual <- FPI.Inputs[ind,6]
-
-  if (DataQual == 1) MERA_Import$D4 <- 4
-  if (DataQual == 2) MERA_Import$D4 <- 4
-  if (DataQual == 3) MERA_Import$D4 <- 3
-  if (DataQual == 4) MERA_Import$D4 <- 2
-  if (DataQual == 5) MERA_Import$D4 <- 2
-
-  MERA_Import
-}
-
+#
+#
+#
+#   MERA_Import <- list()
+#
+#   # ---- Fishery Questions ----
+#   # F1
+#   MERA_Import$Des<-list()
+#   MERA_Import$Des$Name <- Data@Common_Name
+#   MERA_Import$Des$Species <- Data@Species
+#   MERA_Import$Des$Region <- Data@Region
+#   MERA_Import$Des$Agency <- NA # Not in currently in Data file
+#   MERA_Import$Des$Syear <- max(Data@Year)
+#   MERA_Import$Des$Lyear<- min(Data@Year)
+#
+#   authors <- FPI.Cover[18,2:ncol(FPI.Cover)]
+#   authors <- as.matrix(authors)
+#   authors <- authors[!is.na(authors)]
+#   authors <- paste(authors, collapse=", ")
+#   if (length(authors)<1) authors <- NA
+#
+#   MERA_Import$Des$Author <- authors # Not in currently in Data file
+#
+#   # F2
+#   if (is.na(Data@Mort))  errlist$Mort<-"Natural mortality rate slot 'M' not specified in sheet '12. Fishery Data'"
+#   if (is.na(Data@CV_Mort)) errlist$CV_Mort <- "Coefficient of Variation slot 'CV M' not specificed in sheet '12. Fishery Data'"
+#
+#   # F3
+#   if (is.na(Data@Dep)) {
+#     AM("Depletion slot 'Current stock depletion' not specified in sheet '12. Fishery Data' - maximum uncertainty in stock depletion has been assumed")
+#   } else {
+#     if (is.na(Data@CV_Dep)){
+#       AM("Depletion coefficient of variation slot 'CV current stock depletion' not specified in sheet '12. Fishery Data'- maximum uncertainty in stock depletion has been assumed")
+#     }
+#   }
+#
+#   # F4
+#   if (is.na(Data@steep)) {
+#     # Default is last 3 options
+#     AM("Resilience / steepness slot 'Steepness' not specified in sheet '12. Fishery Data' - values in the range of 0.5 to 1 are assumed")
+#     PanelState$Fpanel[[3]][1:2] <- F
+#   }
+#
+#   # F5
+#   # TODO: Import from Data@Effort or answer in MERA
+#   MERA_Import$eff_values<-list()
+#   MeRA_Import$eff_values$df<-data.frame(x=Data@Year,y=Data@Effort,series=rep(1,length(Data@Year)))
+#
+#   # F6
+#   F6in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[1], "[0-9]+")[[1]])
+#   F6 <- rep(FALSE, 3)
+#   if (1 %in% F6in) F6[1] <- TRUE
+#   if (2 %in% F6in) F6[2] <- TRUE
+#   if (3 %in% F6in) F6[3] <- TRUE
+#   MERA_Import$F6 <- (1:3)[F6]
+#
+#   # F7
+#   F7in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[2], "[0-9]+")[[1]])
+#   F7 <- rep(FALSE, 5)
+#   if (1 %in% F7in) F7[3] <- TRUE
+#   if (2 %in% F7in) F7[4] <- TRUE
+#   if (3 %in% F7in) F7[5] <- TRUE
+#   if (4 %in% F7in) F7[2] <- TRUE
+#   if (5 %in% F7in) F7[1] <- TRUE
+#   MERA_Import$F7 <- (1:5)[F7]
+#   if (length( MERA_Import$F7) ==0)  MERA_Import$F7 <- 3
+#   MERA_Import$F7 <- min(MERA_Import$F7):max(MERA_Import$F7)
+#
+#   # F8
+#   # Default to stable
+#   MERA_Import$F8 <- 3
+#
+#   # F9
+#   if(!is.na(Data@L50) & !is.na(Data@vbLinf)) {
+#     if (is.na(Data@CV_L50)) stop("CV_L50 is NA")
+#     if (is.na(Data@CV_vbLinf)) stop("CV_vbLinf is NA")
+#
+#     L50range <- qlnorm(quants, log(Data@L50), Data@CV_L50)
+#     Linfrange <- qlnorm(quants, log(Data@vbLinf), Data@CV_vbLinf)
+#     Lmrange <- (L50range/Linfrange) %>% sort()
+#     group <- c(0, 0.5, 0.6, 0.7, 0.8, 1)
+#     MERA_Import$F9 <- match(cut(Lmrange, group), levels(cut(Lmrange, group)))
+#     MERA_Import$F9 <- min(MERA_Import$F9):max(MERA_Import$F9)
+#
+#   } else {
+#     MERA_Import$F9 <- 1:5
+#   }
+#
+#   # F10
+#   if(!is.na(Data@LFC) & !is.na(Data@vbLinf)) {
+#     if (is.na(Data@CV_LFC)) stop("CV_LFC is NA")
+#     if (is.na(Data@CV_vbLinf)) stop("CV_vbLinf is NA")
+#
+#     LFCrange <- qlnorm(quants, log(Data@LFC), Data@CV_LFC)
+#     Linfrange <- qlnorm(quants, log(Data@vbLinf), Data@CV_vbLinf)
+#     Lcrange <- (LFCrange/Linfrange) %>% sort()
+#     group <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
+#     MERA_Import$F10 <- match(cut(Lcrange, group), levels(cut(Lcrange, group)))
+#     MERA_Import$F10 <- min(MERA_Import$F10):max(MERA_Import$F10)
+#
+#   } else {
+#     MERA_Import$F10 <- 1:5
+#   }
+#
+#   # F11
+#   if (is.na(Data@Vmaxlen)) {
+#     MERA_Import$F11 <- 1
+#   } else {
+#     group <- c(0, 0.25, 0.75, 0.99, 2)
+#     lev <- match(cut(Data@Vmaxlen, group), levels(cut(Data@Vmaxlen, group)))
+#     MERA_Import$F11 <- -lev + 5
+#   }
+#
+#   # F12
+#   F12in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[3], "[0-9]+")[[1]])
+#   F12 <- rep(FALSE, 5)
+#   if (1 %in% F12in) F12[1] <- TRUE
+#   if (2 %in% F12in) F12[2] <- TRUE
+#   if (3 %in% F12in) F12[3] <- TRUE
+#   if (4 %in% F12in) F12[4] <- TRUE
+#   if (5 %in% F12in) F12[5] <- TRUE
+#   MERA_Import$F12 <- (1:5)[F12]
+#   MERA_Import$F12 <- min(MERA_Import$F12):max(MERA_Import$F12)
+#
+#   # F13
+#   F13in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[4], "[0-9]+")[[1]])
+#   F13 <- rep(FALSE, 6)
+#   if (1 %in% F13in) F13[1] <- TRUE
+#   if (2 %in% F13in) F13[2] <- TRUE
+#   if (3 %in% F13in) F13[3] <- TRUE
+#   if (4 %in% F13in) F13[4] <- TRUE
+#   if (5 %in% F13in) F13[5] <- TRUE
+#   if (6 %in% F13in) F13[6] <- TRUE
+#   MERA_Import$F13 <- (1:6)[F13]
+#   MERA_Import$F13 <- min(MERA_Import$F13):max(MERA_Import$F13)
+#
+#   # F14
+#   # Default to moderate & high unless in Data
+#   if (!is.na(Data@sigmaR)) {
+#     if (is.na(Data@CV_sigmaR)) stop("CV_sigmaR is NA")
+#     sigmaRrange <- qlnorm(quants, log(Data@sigmaR), Data@CV_sigmaR)
+#     group <- c(0, 0.1, 0.3, 0.6, 0.9, 1E3)
+#     MERA_Import$F14 <- match(cut(sigmaRrange, group), levels(cut(sigmaRrange, group)))
+#   } else {
+#     MERA_Import$F14 <- 3:4
+#   }
+#
+#   # F15
+#   ind <- which(FPI.Inputs[,3] == "MPAs and Sanctuaries")
+#   MPAq <- FPI.Inputs[ind,6]
+#
+#   if (MPAq == 1) MERA_Import$F15 <- 1
+#   if (MPAq == 2) MERA_Import$F15 <- 2
+#   if (MPAq == 3) MERA_Import$F15 <- 3
+#   if (MPAq == 4) MERA_Import$F15 <- 4
+#   if (MPAq == 5) MERA_Import$F15 <- 5:7
+#
+#   # F16
+#   F16in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[5], "[0-9]+")[[1]])
+#   F16 <- rep(FALSE, 5)
+#   if (1 %in% F16in) F16[1] <- TRUE
+#   if (2 %in% F16in) F16[2] <- TRUE
+#   if (3 %in% F16in) F16[3] <- TRUE
+#   if (4 %in% F16in) F16[4] <- TRUE
+#   if (5 %in% F16in) F16[5] <- TRUE
+#   MERA_Import$F16 <- (1:5)[F16]
+#   MERA_Import$F16 <- min(MERA_Import$F16):max(MERA_Import$F16)
+#
+#   # F17
+#   F17in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[6], "[0-9]+")[[1]])
+#   F17 <- rep(FALSE, 7)
+#   if (1 %in% F17in) F17[1] <- TRUE
+#   if (2 %in% F17in) F17[2] <- TRUE
+#   if (3 %in% F17in) F17[3] <- TRUE
+#   if (4 %in% F17in) F17[4] <- TRUE
+#   if (5 %in% F17in) F17[5] <- TRUE
+#   if (6 %in% F17in) F17[6] <- TRUE
+#   if (7 %in% F17in) F17[7] <- TRUE
+#   MERA_Import$F17 <- (1:7)[F17]
+#   MERA_Import$F17 <- min(MERA_Import$F17):max(MERA_Import$F17)
+#
+#   # F18
+#   F18in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[7], "[0-9]+")[[1]])
+#   F18 <- rep(FALSE, 5)
+#   if (1 %in% F18in) F18[1] <- TRUE
+#   if (2 %in% F18in) F18[2] <- TRUE
+#   if (3 %in% F18in) F18[3] <- TRUE
+#   if (4 %in% F18in) F18[4] <- TRUE
+#   if (5 %in% F18in) F18[5] <- TRUE
+#   MERA_Import$F18 <- (1:5)[F18]
+#   MERA_Import$F18 <- min(MERA_Import$F18):max(MERA_Import$F18)
+#
+#   # F19
+#   # Default to unfished
+#   MERA_Import$F19 <- 5
+#
+#   # ---- Management Questions ----
+#   # M1
+#   M1in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[8], "[0-9]+")[[1]])
+#   M1 <- rep(FALSE, 4)
+#   if (1 %in% M1in) M1[1] <- TRUE
+#   if (2 %in% M1in) M1[2] <- TRUE
+#   if (3 %in% M1in) M1[3] <- TRUE
+#   if (4 %in% M1in) M1[4] <- TRUE
+#   MERA_Import$M1 <- (1:4)[M1]
+#   MERA_Import$M1 <- min(MERA_Import$M1):max(MERA_Import$M1)
+#
+#   # M2 & M3
+#   ind <- which(FPI.Inputs[,3] == "Enforcement Capability")
+#   Enforce <- FPI.Inputs[ind,6]
+#
+#   MERA_Import$M2 <- 4 # average taken exactly
+#   # variability linked to enforcement
+#   if (Enforce == 1) MERA_Import$M3 <- 5
+#   if (Enforce == 2) MERA_Import$M3 <- 4:5
+#   if (Enforce == 3) MERA_Import$M3 <- 3:4
+#   if (Enforce == 4) MERA_Import$M3 <- 2:3
+#   if (Enforce == 5) MERA_Import$M3 <- 1
+#
+#   # M4 - M7 - Mirror M2 & M3
+#   MERA_Import$M4 <- MERA_Import$M6 <-   MERA_Import$M2
+#   MERA_Import$M5 <- MERA_Import$M7 <-   MERA_Import$M3
+#
+#   # ---- Data Questions ----
+#
+#   # D1
+#   MERA_Import$D1 <- NA # not required - Data already loaded in FPI+
+#
+#   # D2
+#   D2in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[9], "[0-9]+")[[1]])
+#   D2 <- rep(FALSE, 5)
+#   if (1 %in% D2in) D2[1] <- TRUE
+#   if (2 %in% D2in) D2[2] <- TRUE
+#   if (3 %in% D2in) D2[3] <- TRUE
+#   if (4 %in% D2in) D2[4] <- TRUE
+#   if (5 %in% D2in) D2[5] <- TRUE
+#   MERA_Import$D2 <- (1:5)[D2]
+#   MERA_Import$D2 <- min(MERA_Import$D2):max(MERA_Import$D2)
+#
+#   # D3
+#   D3in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[9], "[0-9]+")[[1]])
+#   D3 <- rep(FALSE, 5)
+#   if (1 %in% D3in) D3[1] <- TRUE
+#   if (2 %in% D3in) D3[2] <- TRUE
+#   if (3 %in% D3in) D3[3] <- TRUE
+#   if (4 %in% D3in) D3[4] <- TRUE
+#   if (5 %in% D3in) D3[5] <- TRUE
+#   MERA_Import$D3 <- (1:5)[D3]
+#   MERA_Import$D3 <- min(MERA_Import$D3):max(MERA_Import$D3)
+#
+#   # D4
+#   ind <- which(FPI.Inputs[,3] == "Data Availability")
+#   DataQual <- FPI.Inputs[ind,6]
+#
+#   if (DataQual == 1) MERA_Import$D4 <- 4
+#   if (DataQual == 2) MERA_Import$D4 <- 4
+#   if (DataQual == 3) MERA_Import$D4 <- 3
+#   if (DataQual == 4) MERA_Import$D4 <- 2
+#   if (DataQual == 5) MERA_Import$D4 <- 2
+#
+#   MERA_Import
+# }
+#
 
 
 
