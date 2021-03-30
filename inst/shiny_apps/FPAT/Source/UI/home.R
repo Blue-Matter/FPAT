@@ -11,7 +11,9 @@ Home_UI <- function(id, label="Home") {
            HTML('<br>'),
            htmlOutput(ns('Instruct')),
            HTML('<br>'),
-           htmlOutput(ns('Help'))
+           htmlOutput(ns('Help')),
+
+           a("FPAT User Guide", href="https://blue-matter.github.io/FPAT/FPAT.html")
     #verbatimTextOutput(ns("Intro")),
     )
   )
@@ -32,8 +34,8 @@ Home_Server <- function(id) {
 
       output$Help <- renderText({
         "3. Getting help using FPAT"
-      })
 
+      })
 
     }
   )
