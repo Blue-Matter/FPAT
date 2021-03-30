@@ -1,4 +1,5 @@
-
+for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl), local = TRUE)
+for (fl in list.files("./Source/OM")) source(file.path("./Source/OM", fl), local = TRUE)
 
 fluidPage(
 
