@@ -1,12 +1,15 @@
 
 
 
-Manage_UI <- function(id, label="Manage1") {
+Manage_UI <- function(id, label="Manage") {
 
   ns <- NS(id)
   tagList(
-    verbatimTextOutput(ns("Intro")),
-    checkboxInput(ns("test"),"test")
+    column(12,style="height: 700px",
+           HTML('<br>'),
+           htmlOutput(ns("Intro")),
+
+    )
   )
 
 }
@@ -16,7 +19,7 @@ Manage_Server <- function(id) {
     function(input, output, session) {
 
       output$Intro <- renderText({
-        "Manage stuff"
+        "In this panel users select management procedures for testing"
       })
 
     }

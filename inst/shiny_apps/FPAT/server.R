@@ -1,8 +1,12 @@
 
 
+
 options(shiny.maxRequestSize=1000*1024^2)
 
 server <- function(input, output, session) {
+
+  for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl), local = TRUE)
+  for (fl in list.files("./Source/OM")) source(file.path("./Source/OM", fl), local = TRUE)
 
   # ---- Initialize Reactive Values -----
   Toggles <- reactiveValues(
@@ -25,9 +29,10 @@ server <- function(input, output, session) {
 
   # splash page
   Home_Server('Home1')
+  Load_Server('Load1')
   Fishery_Server('Fishery1')
   Manage_Server('Manage1')
-  Help_Server('Help1')
+  Results_Server('Results1')
 
   USERID<-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
   SessionID<-paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])

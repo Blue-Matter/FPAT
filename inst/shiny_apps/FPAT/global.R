@@ -6,9 +6,9 @@ library(shinyWidgets)
 library(shiny)
 library(shinyBS)
 library(shinydashboard)
-
-for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl), local = TRUE)
-
+library(readxl)
+library(stringr)
+library(MSEtool)
 
 # Shared variables
 
