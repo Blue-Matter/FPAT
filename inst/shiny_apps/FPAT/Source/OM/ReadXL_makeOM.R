@@ -83,7 +83,7 @@ LowSlopes<-function(OMin, except = NULL) {
 
 importFPI <- function(FPIfile) {
 
-  errlist<-list()
+  errlist<-asslist<-list()
 
   sheets <- readxl::excel_sheets(FPIfile)
   if (!'12. Fishery Data' %in% sheets) errlist$Datasheet <- "FPI+ is missing '12. Fishery Data' sheet"
@@ -97,7 +97,7 @@ importFPI <- function(FPIfile) {
   plusgroup<-40
 
   OM<-LowSlopes(MSEtool::testOM)
-  OM@nsim<-24
+  OM@nsim<-nsim<-24
   OM@interval<-4
   OM@proyears<-30
   OM@seed<-1
@@ -113,6 +113,10 @@ importFPI <- function(FPIfile) {
   OM@Region<-Data@Region
   OM@Agency<-""
   Nyears<-max(Data@Year)-min(Data@Year)+1
+  if(Nyears < 15)errlist$Nyears<-paste("You have specfied only",Nyears, "years of fishery data. Does this represent a relatively complete picture
+                                        of the history of the fishery from unfished conditions? The effort data in particular should start from
+                                        the first year of appreciable catches. A minimum requirement of at least 15 years of historical data are required to
+                                        initialize an operating model in FPAT.")
   OM@nyears<-Nyears
 
   authors <- FPI.Cover[18,2:ncol(FPI.Cover)]
@@ -129,17 +133,18 @@ importFPI <- function(FPIfile) {
   if (DataQual > 3) MERA_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Precise_Unbiased,Perfect_Imp)
   OM<-Replace(OM,temp,Sub="Obs")
 
+  OM@cpars<-list()
 
   # ---- Fishery characteristics ---------------------------------------------------------------------------
 
   if(is.na(Data@Mort)){
     errlist$Mort<-"Natural mortality rate slot 'M' not specified in sheet '12. Fishery Data'"
   }else{
+    OM@M<-rep(Data@Mort,2)
     if(is.na(Data@CV_Mort)){
-      AM("Coefficient of variation in matural mortality rate slot 'CV M' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1")
+      asslist$Mort<-"Coefficient of variation in matural mortality rate slot 'CV M' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1"
+      OM@cpars$M <- trlnorm(nsim,Data@Mort,0.1)
     }else{
-      OM@M<-rep(Data@Mort,2)
-      OM@cpars<-list()
       OM@cpars$M <- trlnorm(nsim,Data@Mort,Data@CV_Mort)
     }
   }
@@ -147,11 +152,11 @@ importFPI <- function(FPIfile) {
   if(is.na(Data@L50)){
     errlist$maxage<-"Length at 50% maturity slot not specified in sheet '12. Fishery Data'"
   }else{
+    OM@L50<-rep(Data@L50,2)
     if(is.na(Data@CV_L50)){
-      AM("Coefficient of variation in length at 50% maturity slot not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1")
+      asslist$CV_L50<-"Coefficient of variation in length at 50% maturity slot not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1"
       OM@cpars$L50 <- trlnorm(nsim,Data@L50,0.1)
     }else{
-      OM@L50<-rep(Data@L50,2)
       OM@cpars$L50 <- trlnorm(nsim,Data@L50,Data@CV_L50)
     }
   }
@@ -159,11 +164,11 @@ importFPI <- function(FPIfile) {
   if(is.na(Data@vbLinf)){
     errlist$vbLinf<-"Asymptotic length 'Von Bertalantffy Linf parameter' not specified in sheet '12. Fishery Data'"
   }else{
+    OM@Linf<-rep(Data@vbLinf,2)
     if(is.na(Data@CV_vbLinf)){
-      AM("Coefficient of variation in asymptotic length 'CV von B. Linf parameter'not specified in sheet '12. Fishery Data' - assuming a CV value of 0.05")
+      asslist$CV_vbLinf<-"Coefficient of variation in asymptotic length 'CV von B. Linf parameter'not specified in sheet '12. Fishery Data' - assuming a CV value of 0.05"
       OM@cpars$Linf <- trlnorm(nsim,Data@vbLinf,0.05)
     }else{
-      OM@Linf<-rep(Data@vbLinf,2)
       OM@cpars$Linf <- trlnorm(nsim,Data@vbLinf,Data@CV_vbLinf)
     }
   }
@@ -171,23 +176,23 @@ importFPI <- function(FPIfile) {
   if(is.na(Data@vbK)){
     errlist$vbK<-"Asymptotic length 'Von Bertalantffy K parameter' not specified in sheet '12. Fishery Data'"
   }else{
+    OM@K<-rep(Data@vbK,2)
     if(is.na(Data@CV_vbK)){
-      AM("Coefficient of variation in asymptotic length 'CV von B. K parameter' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1")
+      asslist$CV_vbK<-"Coefficient of variation in asymptotic length 'CV von B. K parameter' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1"
       OM@cpars$K <- trlnorm(nsim,Data@vbLinf,0.1)
     }else{
-      OM@K<-rep(Data@vbK,2)
       OM@cpars$K <- trlnorm(nsim,Data@vbK,Data@CV_vbK)
     }
   }
 
   if(is.na(Data@vbt0)){
-    AM("Theoretical age at length zero 'Von B. t0 parameter' not specified in sheet '12. Fishery Data' - assuming a t0 value of 0")
+    asslist$t0<-"Theoretical age at length zero 'Von B. t0 parameter' not specified in sheet '12. Fishery Data' - assuming a t0 value of 0"
   }else{
-    if(is.na(Data@CV_vbK)){
-      AM("Coefficient of variation in theoretical age at length zero 'CV von B. t0 parameter' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1")
+    OM@t0<-rep(Data@vbt0,2)
+    if(is.na(Data@CV_vbt0)){
+      asslist$CV_vbt0<-"Coefficient of variation in theoretical age at length zero 'CV von B. t0 parameter' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1"
       OM@cpars$t0 <- trlnorm(nsim,Data@vbt0,0.1)
     }else{
-      OM@t0<-rep(Data@vbt0,2)
       OM@cpars$t0 <- trlnorm(nsim,Data@vbt0,Data@CV_vbt0)
     }
   }
@@ -200,61 +205,48 @@ importFPI <- function(FPIfile) {
   OM@maxage<-min(OM@maxage,plusgroup)
 
   if (is.na(Data@Dep)) {
-    AM("Depletion slot 'Current stock depletion' not specified in sheet '12. Fishery Data', maximum uncertainty in stock depletion has been assumed (1% to 50% of unfished spawning stock biomass")
+    asslist$Dep<-"Depletion slot 'Current stock depletion' not specified in sheet '12. Fishery Data', maximum uncertainty in stock depletion has been assumed (1% to 50% of unfished spawning stock biomass"
     OM@cpars$D<-runif(nsim,0.01,0.5)
   }else{
+    OM@D<-rep(Data@Dep,2)
     if(is.na(Data@CV_Dep)){
-      AM("Coefficient of variation in current spawning stock biomass relative to unfished 'CV current stock depletion' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.25")
-      OM@cpars$D <- trlnorm(nsim,Data@Dep,0.26)
+      asslist$CV_Dep<-"Coefficient of variation in current spawning stock biomass relative to unfished 'CV current stock depletion' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.25"
+      OM@cpars$D <- trlnorm(nsim,Data@Dep,0.25)
     }else{
-      OM@D<-rep(Data@Dep,2)
       OM@cpars$D <- trlnorm(nsim,Data@Dep,Data@CV_Dep)
     }
   }
 
-
   if (is.na(Data@steep)) {
-    AM("Resilience slot 'Steepness' not specified in sheet '12. Fishery Data', values in the range 0.5-0.9 are assumed")
+    asslist$steep<-"Resilience slot 'Steepness' not specified in sheet '12. Fishery Data', values in the range 0.5-0.9 are assumed"
     OM@cpars$h<-runif(nsim,0.5,0.9)
   }else{
+    OM@h<-rep(Data@steep,2)
     if(is.na(Data@CV_steep)){
-      AM("Coefficient of variation in resilience 'CV Steepness' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.15")
+      asslist$CV_steep<- "Coefficient of variation in resilience 'CV Steepness' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.15"
       OM@cpars$h <- sample_steepness2(nsim,Data@steep,0.15)
     }else{
-      OM@h<-rep(Data@steep,2)
       OM@cpars$h <- sample_steepness2(nsim,Data@steep,Data@CV_steep)
     }
   }
 
-
-  # --- Life history imputation
-  #OMtemp<-OM1
-  #OMtemp@nsim<-1000
-  #OMtemp<-LH2OM(OMtemp, dist='norm',plot=F,filterMK=T) # get sample
-  #OM1@K<-quantile(OMtemp@cpars$K,c(0.1,0.9)) # 80th percentile from LH2OM
-  #OM1<-LH2OM(OM1, dist='norm',plot=F,filterMK=T) # truncated sample
-
-  OM1@L50<-quantile(OM1@cpars$L50,c(0.1,0.90))
-  OM1@L50_95<-c(10,10)
-  OM1@Linf<-c(100,100)
-  OM1@D<-getminmax(1,"D",PanelState)                                                        # F3 -----------
-  OM1@h<-getminmax(1,"h",PanelState)                                                        # F4 -----------
-
   # Ftrend and error
   # eff_values<-readRDS("C:/temp/eff_values.rda"); input<-list(ny=68); nyears=68; nsim=48; Esd_min=0.1; Esd_max=0.5 # F5 -----------
-  trends<-effort_mat()
+
+  trends<-matrix(Data@Effort,nrow=nsim,ncol=Nyears,byrow=T)
   trends<-trends/apply(trends,1,mean)
   nt<-dim(trends)[1]
-
-  Esd<-getminmax(1,"F",PanelState)                                                         # F6 ----------
-  Esd_max<-Esd[2]
-  Esd_min<-Esd[1]
-  Esdrand<-samp_par(nsim,type=type,Esd_min,Esd_max,trunc=trunc) #runif(nsim,Esd_min,Esd_max)
+  Esdmins<-c(0,0.2,0.5)
+  Esdmaxes<-c(0.2,0.5,0.8)
+  ind<- MERA.Qs$Score[1]
+  Esdrand<-runif(nsim,Esdmins[ind],Esdmaxes[ind]) #runif(nsim,Esd_min,Esd_max)
   Emu<-(-0.5*Esdrand^2)
   Esdarray<-array(exp(rnorm(nsim*Nyears,Emu,Esdrand)),c(nsim,Nyears))
 
-  qhs<-getminmax(1,"qh",PanelState)
-  qhssim<-samp_par(nsim,type=type,qhs[1],qhs[2],trunc=trunc) #(nsim,qhs[1],qhs[2])
+  qmins<-c(-1,1,2,-2,-3)
+  qmaxes<-c(1,2,3,-1,-2)
+  ind<- MERA.Qs$Score[2]
+  qhssim<-runif(nsim,qmins[ind],qmaxes[ind]) #(nsim,qhs[1],qhs[2])
   qssim<-1+qhssim/100                                                   # F7 ----------
   trendsamp<-ceiling(runif(nsim)*nt)
 
@@ -263,18 +255,47 @@ importFPI <- function(FPIfile) {
 
   # --- Future catchability ----------
 
-  OM1@qinc<-getminmax(1,"q",PanelState)                                                     # F8 ----------
+  OM1@qinc<-c(qmins[ind],qmaxes[ind])                                                      # F8 ----------
 
   # --- Selectivity -----------------------
 
-  Sel50<-getminmax(1,"sel",PanelState)                                                     # F10 ----------
-  Sel50sim<-samp_par(nsim,type=type,Sel50[1],Sel50[2],trunc=trunc) #runif(nsim,Sel50[1],Sel50[2])
+  if (is.na(Data@LFC)) {
+    errlist$steep<-"Length at first capture not specified in sheet '12. Fishery Data'"
+  }else{
+    OM@L5<-rep(Data@LFC,2)
+    if(is.na(Data@CV_LFC)){
+      asslist$CV_LFC<- "Coefficient of variation in length at first capture not specified in sheet '12. Fishery Data' - assuming a CV value of 0.15"
+      OM@cpars$L5 <- trlnorm(nsim,Data@LFC,0.15)
+    }else{
+      OM@cpars$L5 <- trlnorm(nsim,Data@LFC,Data@CV_LFC)
+    }
+  }
 
-  L5<-OM1@cpars$Linf*Sel50sim*0.8
-  LFS<-OM1@cpars$Linf*Sel50sim*1.2
-  cond<-LFS>0.95*OM1@cpars$Linf
-  LFS[cond]<-0.95*OM1@cpars$Linf[cond]
-  Linf<-rep(100,nsim)
+  if (is.na(Data@LFS)) {
+    errlist$LFS<-"Length at full selection not specified in sheet '12. Fishery Data'"
+  }else{
+    OM@LFS<-rep(Data@LFS,2)
+    if(is.na(Data@CV_LFS)){
+      asslist$CV_LFS<- "Coefficient of variation in length at full selection not specified in sheet '12. Fishery Data' - assuming a CV value of 0.15"
+      OM@cpars$LFS <- trlnorm(nsim,Data@LFS,0.15)
+    }else{
+      OM@cpars$LFS <- trlnorm(nsim,Data@LFS,Data@CV_LFS)
+    }
+  }
+
+  if (is.na(Data@Vmaxlen)) {
+    asslist$Vmaxlen<-"Length at full selection not specified in sheet '12. Fishery Data' - assuming 'flat-topped' logistic selectivity"
+    OM@LFS<-rep(Data@LFS,2)
+    OM@cpars$Vmaxlen<-rep(1,nsim)
+  }else{
+    OM@LFS<-rep(Data@LFS,2)
+    if(is.na(Data@CV_LFS)){
+      asslist$CV_LFS<- "Coefficient of variation in length at full selection not specified in sheet '12. Fishery Data' - assuming a CV value of 0.15"
+      OM@cpars$LFS <- trlnorm(nsim,Data@LFS,0.15)
+    }else{
+      OM@cpars$LFS <- trlnorm(nsim,Data@LFS,Data@CV_LFS)
+    }
+  }
 
   OM1@Vmaxlen<-getminmax(1,"dome",PanelState)                                               # F11 ----------
 
