@@ -193,6 +193,10 @@ fluidPage(
                        Results_UI('Results1'),
                        box_height='50px'),
 
+      verticalTabPanel(value=6,
+                       h5("5. FPI Plots"),
+                       FPI_UI('FPI1'),
+                       box_height='50px'),
 
     contentWidth=11
 

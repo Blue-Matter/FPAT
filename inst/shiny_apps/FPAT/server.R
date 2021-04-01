@@ -23,6 +23,12 @@ server <- function(input, output, session) {
   output$MSE <- reactive({ Toggles$MSE })
   outputOptions(output, "MSE", suspendWhenHidden = FALSE)
 
+  Info <- reactiveValues(
+    file=NULL, # input file
+    Summary=NULL, # FPI summary tab
+    Output_table=NULL, # FPI output-table
+    Input_table=NULL
+  )
 
   # Log ----------------------------------------------------------
   #output$Log<-renderText(Log_text$text)
@@ -33,6 +39,7 @@ server <- function(input, output, session) {
   Fishery_Server('Fishery1')
   Manage_Server('Manage1')
   Results_Server('Results1')
+  FPI_Server("FPI1")
 
   USERID<-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
   SessionID<-paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])
