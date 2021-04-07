@@ -1,8 +1,6 @@
-for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl), local = TRUE)
-for (fl in list.files("./Source/OM")) source(file.path("./Source/OM", fl), local = TRUE)
 
 fluidPage(
-
+  #useShinyalert(),
   includeScript(path = "www/js/js4checkbox.js"),
   includeScript(path = "www/js/index.js"),
 
@@ -204,14 +202,17 @@ fluidPage(
 
   ), # end of main window for general
 
+  column(12, verbatimTextOutput("Log",placeholder=T)),
+  bsTooltip("Log","Application Log"),
+  column(12,
+         column(3,downloadButton("Download_Log","Download Log",style="height:28px"))
+  ),
+  column(12),
+  hr(),
 
   column(12,  br(),br(), style="height:40px;  text-align: center;",textOutput("SessionID")),
 
   column(12,  br(),style="height:40px; text-align: center", h6("copyright (c) Blue Matter Science Ltd, 2021"))
-        #h5("Bottom of app (Version etc)"),
-         #verbatimTextOutput("Log2",placeholder=T)
 
-         # verbatimTextOutput("Temp",placeholder=T)
-         #)
 
 ) # end of fluid page

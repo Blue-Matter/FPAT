@@ -4,11 +4,7 @@
 options(shiny.maxRequestSize=1000*1024^2)
 
 server <- function(input, output, session) {
-
-  for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl), local = TRUE)
-  for (fl in list.files("./Source/OM")) source(file.path("./Source/OM", fl), local = TRUE)
-
-  # ---- Initialize Reactive Values -----
+   # ---- Initialize Reactive Values -----
   Toggles <- reactiveValues(
     Loaded=FALSE, # FPAT loaded?
     Fit=FALSE,    # Model fitted?
@@ -27,11 +23,10 @@ server <- function(input, output, session) {
     file=NULL, # input file
     Summary=NULL, # FPI summary tab
     Output_table=NULL, # FPI output-table
-    Input_table=NULL
+    Input_table=NULL#,
+    #OM = NULL  # Operating models
   )
 
-  # Log ----------------------------------------------------------
-  #output$Log<-renderText(Log_text$text)
 
   # splash page
   Home_Server('Home1')
@@ -44,5 +39,10 @@ server <- function(input, output, session) {
   USERID<-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
   SessionID<-paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])
   output$SessionID<-renderText(SessionID)
+
+  # Log stuff
+  Log_text <- reactiveValues(text=paste0("-------- Start of Session -------- \nSession ID: ",SessionID,"\nUser ID: ",USERID))
+  output$Log <- renderText(Log_text$text)
+
 
 }

@@ -35,6 +35,11 @@ Load_Server <- function(id) {
         Info$file <- input$Load
         Info$Summary <- readxl::read_excel(Info$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
         Info$Output_table <- readxl::read_excel(FPIfile, sheet='5. Output-table', .name_repair = 'minimal')
+
+        # make the operating model
+        OM<-makeOM(FPIfile=input$Load$datapath)
+        Toggles$Loaded<-as.integer(!is.null(OM))
+
       })
 
     }
