@@ -27,10 +27,9 @@ server <- function(input, output, session) {
     #OM = NULL  # Operating models
   )
 
-
   # splash page
   Home_Server('Home1')
-  Load_Server('Load1')
+  Load_Server('Load1', Info=Info)
   Fishery_Server('Fishery1')
   Manage_Server('Manage1')
   Results_Server('Results1')
