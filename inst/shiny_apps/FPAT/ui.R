@@ -1,6 +1,6 @@
 
 fluidPage(
-  #useShinyalert(),
+  useShinyalert(),
   includeScript(path = "www/js/js4checkbox.js"),
   includeScript(path = "www/js/index.js"),
 
@@ -52,7 +52,7 @@ fluidPage(
                                     tabsetPanel(
 
                                       tabPanel(h5("FPI ",style = "color:black"), HTML("<br>"), DT::dataTableOutput('CMPhelp'),value=1),
-                                      tabPanel(h5("MERA",style = "color:black"), HTML("<br>"), DT::dataTableOutput('PMhelp'),value=2),
+                                      tabPanel(h5("openMSE",style = "color:black"), HTML("<br>"), DT::dataTableOutput('PMhelp'),value=2),
                                       tabPanel(h5("FPAT",style = "color:black"), HTML("<br>"), value=3)
 
                                     )# end of dropdownbutton CMP
@@ -70,7 +70,7 @@ fluidPage(
                              ),
                              h5(tags$b("Acknowledgements",style="color:#347ab6")),
                              column(12,
-                                    h5("FAO, UW, MERA sponsors")
+                                    h5("FAO, UW, openMSE sponsors")
 
                              )
 
@@ -166,35 +166,30 @@ fluidPage(
     verticalTabsetPanel(id = "NonTech",selected=1,
 
       verticalTabPanel(value=1,
-                       h5(strong("Home")),
+                       h5("Home"),
                        height="400px",
                        Home_UI('Home1'),
-                       box_height='50px'),
+                       box_height='55px'),
 
       verticalTabPanel(value=2,
-                       h5("1. Load"),
+                       h5(strong("1. Load")),
                        Load_UI('Load1'),
-                       box_height='50px'),
+                       box_height='55px'),
 
       verticalTabPanel(value=3,
-                       h5("2. Fishery"),
-                       Fishery_UI('Fishery1'),
-                       box_height='50px'),
-
-      verticalTabPanel(value=4,
-                       h5("3. Management"),
-                       Manage_UI('Manage1'),
-                       box_height='50px'),
+                       h5(strong("2. Inputs")),
+                       Inputs_UI('Inputs1'),
+                       box_height='55px'),
 
       verticalTabPanel(value=5,
-                       h5("4. Results"),
+                       h5(strong("3. Results")),
                        Results_UI('Results1'),
-                       box_height='50px'),
+                       box_height='55px'),
 
-      verticalTabPanel(value=6,
-                       h5("5. FPI Plots"),
-                       FPI_UI('FPI1'),
-                       box_height='50px'),
+      #verticalTabPanel(value=6,
+      #                 h5("4. FPI Plots"),
+      #                 FPI_UI('FPI1'),
+      #                 box_height='55px'),
 
     contentWidth=11
 
@@ -202,6 +197,7 @@ fluidPage(
 
   ), # end of main window for general
 
+  column(12, br()),
   column(12, verbatimTextOutput("Log",placeholder=T)),
   bsTooltip("Log","Application Log"),
   column(12,

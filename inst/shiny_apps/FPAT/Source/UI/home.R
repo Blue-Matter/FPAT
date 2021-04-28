@@ -7,6 +7,8 @@ Home_UI <- function(id, label="Home") {
   tagList(
     column(12,style="height: 700px",
            HTML('<br>'),
+           h4("This page is a place holder - text to be finalized later but could cover:"),
+           HTML('<br>'),
            htmlOutput(ns('Intro')),
            HTML('<br>'),
            htmlOutput(ns('Instruct')),
@@ -29,7 +31,7 @@ Home_Server <- function(id) {
       })
 
       output$Instruct <- renderText({
-        "2. Instructions for using FPAT (Load > Examine Fishery > Specify Management > Results)"
+        "2. Instructions for using FPAT (1. Load > 2. Examine Inputs > 3. View Results)"
       })
 
       output$Help <- renderText({

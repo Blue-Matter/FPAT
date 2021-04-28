@@ -8,21 +8,23 @@ Load_UI <- function(id, label="Load") {
     column(12,style="height: 700px",
        HTML('<br>'),
        htmlOutput(ns("Intro")),
+              HTML('<br>'),
+       h5("Select an existing FPAT case study",style="color:#347ab6"),
+       column(12,
+           div(style="display: inline-block;vertical-align:top; width: 250px;",selectInput(ns("Select"),choices=c("Demo_1","Demo_2"),label=NULL)),
+           div(style="display: inline-block;vertical-align:top; width: 250px;",actionButton(ns("LoadSelected"),label="Load case study",icon=icon("cloud-upload")))
+          ),
        HTML('<br>'),
        h5("Load an FPAT spreadsheet (.xlsx)",style="color:#347ab6"),
        column(12,
               tipify(fileInput(ns("Load"),label=NULL),title="An FPAT spreadsheet contains FPI input and outputs, fishery data and MERA questions for specifying an operating model")),
-       HTML('<br>'),
-       h5("Select an existing FPAT case study",style="color:#347ab6"),
-       column(12,
-          selectInput("Select",choices=c("Indonesian blue swimmer crab","Mediterranean brown shrimp","Baja red snapper"),label=NULL))
 
     )
   )
 
 }
 
-Load_Server <- function(id, Info) {
+Load_Server <- function(id, Info, Toggles) {
   moduleServer(id,
     function(input, output, session) {
 
@@ -30,17 +32,18 @@ Load_Server <- function(id, Info) {
         "Load an FPAT"
       })
 
-      observeEvent(input$Load, {
-        # super vulnerable to changes in the FPI workbook...
-        Info$file <- input$Load
-        Info$Summary <- readxl::read_excel(Info$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
-        Info$Output_table <- readxl::read_excel(Info$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
+      observeEvent(input$LoadSelected,{
+        if(input$Select=="Demo_1")  Info$file <- list(datapath = "./Data/Demo_1.xlsx")
+        if(input$Select=="Demo_2")  Info$file <- list(datapath = "./Data/Demo_2.xlsx")
 
-        # make the operating model
-        OM<-makeOM(FPIfile=input$Load$datapath)
-        Toggles$Loaded<-as.integer(!is.null(OM))
-
+        AM(Info$file)
+        fetchOM(Info, Toggles, session)
       })
+
+      observeEvent(input$Load, {
+        Info$file <- input$Load
+        fetchOM(Info, Toggles, session)
+      }) # end of observe load
 
     }
   )

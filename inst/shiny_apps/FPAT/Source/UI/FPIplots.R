@@ -14,10 +14,7 @@ FPI_UI <- function(id, label="FPI") {
                                h1('Output Dimension Scores'),
                                plotOutput(ns('plot1'))
                                ),
-                        column(4,
-                               h1('Input Dimension Scores'),
-                               plotOutput(ns('plot2'))
-                               ),
+
                         column(4,
                                h1('Output Scores by TBL'),
                                plotOutput(ns('plot3'))
@@ -52,7 +49,7 @@ FPI_UI <- function(id, label="FPI") {
 
 }
 
-FPI_Server <- function(id) {
+FPI_Server <- function(id,Info) {
   moduleServer(id,
                function(input, output, session) {
                  output$Intro <- renderText({
@@ -65,11 +62,7 @@ FPI_Server <- function(id) {
                      output_dim_scores(Info$Summary)
                    }
                  })
-                 output$plot2 <- renderPlot({
-                   if (!is.null(Info$file)) {
-                     input_dim_scores(Info$Summary)
-                   }
-                 })
+
                  output$plot3 <- renderPlot({
                    if (!is.null(Info$file)) {
                      output_scores_TBL(Info$Summary)

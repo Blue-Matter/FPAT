@@ -1,6 +1,46 @@
 
 #  FPIfile <- 'G:/Shared drives/BM shared/1. Projects/FPAT/FPAT examples/FPAT vBeta-Dive-based fishery CR.xlsx'
+#  FPIfile <- 'G:/Shared drives/BM shared/1. Projects/FPAT/FPAT examples/demo.xlsx'
 #  mera<-readRDS("G:/Shared drives/BM shared/1. Projects/MERA/MERA_TESTS_2021/TFH/Tiger_flathead.mera")
+
+fetchOM<-function(Info, Toggles, session){
+
+  Info$sheets <- readxl::excel_sheets(Info$file$datapath)
+  Info$Summary <- readxl::read_excel(Info$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
+  Info$Output_table <- readxl::read_excel(Info$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
+  Info$Data <- XL2Data(name=Info$file$datapath, sheet='12. Fishery Data')
+  Info$MERA.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. MERA Questions', .name_repair = 'minimal')
+  Info$FPI.Inputs <- readxl::read_excel(Info$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
+  Info$FPI.Cover <- readxl::read_excel(Info$file$datapath, sheet='3. Cover Page', .name_repair = 'minimal')
+
+  # make the operating model
+
+  tryCatch({
+
+    Info$OM<-makeOM(Info)
+    #saveRDS(Info$OM,"C:/temp/OM.rda") #
+    if(!is.null(Info$OM)){
+      withProgress(message = "Constructing operating model", value = 0, {
+        Info$MSEhist<-runMSE(Info$OM,Hist=T,extended=T)
+      })
+      Toggles$Loaded<-as.integer(!is.null(Info$OM))
+      updateVerticalTabsetPanel(session,'Main',selected=3)
+    }
+    #saveRDS(MSEhist,"C:/temp/MSEhist.rda") #
+    runProj(Info)
+
+  },
+
+  error = function(e){
+
+    AM(paste0(e,"\n"))
+    shinyalert("FPAT did not build", paste("Error:",e), type = "error")
+    AM(paste0(e,"\n"))
+    return(0)
+
+  })
+
+}
 
 
 samp_par<-function(n,type="Truncated normal",LB,UB,trunc=90){
@@ -81,18 +121,18 @@ LowSlopes<-function(OMin, except = NULL) {
 }
 
 
-makeOM <- function(FPIfile) {
+makeOM <- function(Info) {
 
+  AM("--- Loading FPAT spreadsheet ----------------")
   errlist<-asslist<-list()
 
-  sheets <- readxl::excel_sheets(FPIfile)
+  sheets <- Info$sheets
   if (!'12. Fishery Data' %in% sheets) errlist$Datasheet <- "FPI+ is missing '12. Fishery Data' sheet"
   if (!'13. MERA Questions' %in% sheets) errlist$MERAsheet <- "FPI+ is missing '13. MERA Questions' sheet"
-
-  Data <- XL2Data(name=FPIfile, sheet='12. Fishery Data')
-  MERA.Qs <- readxl::read_excel(FPIfile, sheet='13. MERA Questions', .name_repair = 'minimal')
-  FPI.Inputs <- readxl::read_excel(FPIfile, sheet='6. Input-table', .name_repair = 'minimal')
-  FPI.Cover <- readxl::read_excel(FPIfile, sheet='3. Cover Page', .name_repair = 'minimal')
+  Data <- Info$Data #XL2Data(name=FPIfile, sheet='12. Fishery Data')
+  MERA.Qs <- Info$MERA.Qs #readxl::read_excel(FPIfile, sheet='13. MERA Questions', .name_repair = 'minimal')
+  FPI.Inputs <- Info$FPI.Inputs #readxl::read_excel(FPIfile, sheet='6. Input-table', .name_repair = 'minimal')
+  FPI.Cover <- Info$FPI.Cover #readxl::read_excel(FPIfile, sheet='3. Cover Page', .name_repair = 'minimal')
 
   plusgroup<-40
 
@@ -113,8 +153,7 @@ makeOM <- function(FPIfile) {
   OM@Region<-Data@Region
   OM@Agency<-""
   Nyears<-max(Data@Year)-min(Data@Year)+1
-  if(Nyears < 15)errlist$Nyears<-paste("You have specfied only",Nyears, "years of fishery data. Does this represent a relatively complete picture of the history of the
-  fishery from unfished conditions? The effort data in particular should start from the first year of appreciable catches. A minimum requirement of at least 15 years of historical data are required to initialize an operating model in FPAT.")
+  if(Nyears < 15)errlist$Nyears<-paste("You have specfied only",Nyears, "years of fishery effort data (FPAt requires a minimum of 15 years). This should represent a complete picture of the history of the fishery.")
   OM@nyears<-Nyears
 
   authors <- FPI.Cover[18,2:ncol(FPI.Cover)]
@@ -142,7 +181,7 @@ makeOM <- function(FPIfile) {
   }else{
     OM@M<-rep(Data@Mort,2)
     if(is.na(Data@CV_Mort)){
-      asslist$Mort<-"Coefficient of variation in matural mortality rate slot 'CV M' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1"
+      asslist$Mort<-"Coefficient of variation in matural mortality rate slot 'CV M' not specified in sheet '12. Fishery Data'. A CV value of 0.1 was assumed."
       OM@cpars$M <- trlnorm(nsim,Data@Mort,0.1)
     }else{
       OM@cpars$M <- trlnorm(nsim,Data@Mort,Data@CV_Mort)
@@ -154,7 +193,7 @@ makeOM <- function(FPIfile) {
   }else{
     OM@L50<-rep(Data@L50,2)
     if(is.na(Data@CV_L50)){
-      asslist$CV_L50<-"Coefficient of variation in length at 50% maturity slot not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1"
+      asslist$CV_L50<-"Coefficient of variation in length at 50% maturity slot not specified in sheet '12. Fishery Data'A CV value of 0.1 was assumed."
       OM@cpars$L50 <- trlnorm(nsim,Data@L50,0.1)
     }else{
       OM@cpars$L50 <- trlnorm(nsim,Data@L50,Data@CV_L50)
@@ -166,7 +205,7 @@ makeOM <- function(FPIfile) {
   }else{
     OM@Linf<-rep(Data@vbLinf,2)
     if(is.na(Data@CV_vbLinf)){
-      asslist$CV_vbLinf<-"Coefficient of variation in asymptotic length 'CV von B. Linf parameter'not specified in sheet '12. Fishery Data' - assuming a CV value of 0.05"
+      asslist$CV_vbLinf<-"Coefficient of variation in asymptotic length 'CV von B. Linf parameter'not specified in sheet '12. Fishery Data'. A CV value of 0.05 was assumed"
       OM@cpars$Linf <- trlnorm(nsim,Data@vbLinf,0.05)
     }else{
       OM@cpars$Linf <- trlnorm(nsim,Data@vbLinf,Data@CV_vbLinf)
@@ -178,7 +217,7 @@ makeOM <- function(FPIfile) {
   }else{
     OM@K<-rep(Data@vbK,2)
     if(is.na(Data@CV_vbK)){
-      asslist$CV_vbK<-"Coefficient of variation in asymptotic length 'CV von B. K parameter' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1"
+      asslist$CV_vbK<-"Coefficient of variation in asymptotic length 'CV von B. K parameter' not specified in sheet '12. Fishery Data'. A CV value of 0.1 was assumed."
       OM@cpars$K <- trlnorm(nsim,Data@vbLinf,0.1)
     }else{
       OM@cpars$K <- trlnorm(nsim,Data@vbK,Data@CV_vbK)
@@ -186,15 +225,17 @@ makeOM <- function(FPIfile) {
   }
 
   if(is.na(Data@vbt0)){
-    asslist$t0<-"Theoretical age at length zero 'Von B. t0 parameter' not specified in sheet '12. Fishery Data' - assuming a t0 value of 0"
+    asslist$t0<-"Theoretical age at length zero 'Von B. t0 parameter' not specified in sheet '12. Fishery Data'. A t0 value of 0 was assumed."
   }else{
+    if(Data@vbt0>0)errlist$t0pos<-("Theoretical age at length zero 'Von B. t0 parameter' is positive in sheet '12. Fishery Data'")
     OM@t0<-rep(Data@vbt0,2)
     if(is.na(Data@CV_vbt0)){
-      asslist$CV_vbt0<-"Coefficient of variation in theoretical age at length zero 'CV von B. t0 parameter' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.1"
-      OM@cpars$t0 <- trlnorm(nsim,Data@vbt0,0.1)
+      asslist$CV_vbt0<-"Coefficient of variation in theoretical age at length zero 'CV von B. t0 parameter' not specified in sheet '12. Fishery Data'. A CV value of 0.1 was assumed."
+      OM@cpars$t0 <- (-trlnorm(nsim,-Data@vbt0,0.1))
     }else{
-      OM@cpars$t0 <- trlnorm(nsim,Data@vbt0,Data@CV_vbt0)
+      OM@cpars$t0 <- (-trlnorm(nsim,-Data@vbt0,Data@CV_vbt0))
     }
+    #OM@cpars$t0[OM@cpars$t0>0]<-0
   }
 
   if(is.na(Data@MaxAge)){
@@ -207,12 +248,12 @@ makeOM <- function(FPIfile) {
   # --- Stock depletion -----------------------------
 
   if (is.na(Data@Dep)) {
-    asslist$Dep<-"Depletion slot 'Current stock depletion' not specified in sheet '12. Fishery Data', maximum uncertainty in stock depletion has been assumed (1% to 50% of unfished spawning stock biomass"
+    asslist$Dep<-"Depletion slot 'Current stock depletion' not specified in sheet '12. Fishery Data'. A wide range of stock depletion has been assumed (1% to 50% of unfished spawning stock biomass)."
     OM@cpars$D<-runif(nsim,0.01,0.5)
   }else{
     OM@D<-rep(Data@Dep,2)
     if(is.na(Data@CV_Dep)){
-      asslist$CV_Dep<-"Coefficient of variation in current spawning stock biomass relative to unfished 'CV current stock depletion' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.25"
+      asslist$CV_Dep<-"Coefficient of variation in current spawning stock biomass relative to unfished 'CV current stock depletion' not specified in sheet '12. Fishery Data'. A CV value of 0.25 has been assumed."
       OM@cpars$D <- trlnorm(nsim,Data@Dep,0.25)
     }else{
       OM@cpars$D <- trlnorm(nsim,Data@Dep,Data@CV_Dep)
@@ -222,12 +263,12 @@ makeOM <- function(FPIfile) {
   # --- Recruitment --------------------------------
 
   if (is.na(Data@steep)) {
-    asslist$steep<-"Resilience slot 'Steepness' not specified in sheet '12. Fishery Data', values in the range 0.5-0.9 are assumed"
+    asslist$steep<-"Resilience slot 'Steepness' not specified in sheet '12. Fishery Data'. Values in the range 0.5-0.9 were assumed."
     OM@cpars$h<-runif(nsim,0.5,0.9)
   }else{
     OM@h<-rep(Data@steep,2)
     if(is.na(Data@CV_steep)){
-      asslist$CV_steep<- "Coefficient of variation in resilience 'CV Steepness' not specified in sheet '12. Fishery Data' - assuming a CV value of 0.15"
+      asslist$CV_steep<- "Coefficient of variation in resilience 'CV Steepness' not specified in sheet '12. Fishery Data'. A CV value of 0.15 has been assumed."
       OM@cpars$h <- sample_steepness2(nsim,Data@steep,0.15)
     }else{
       OM@cpars$h <- sample_steepness2(nsim,Data@steep,Data@CV_steep)
@@ -235,12 +276,12 @@ makeOM <- function(FPIfile) {
   }
 
   if (is.na(Data@sigmaR)) {                                             # 14
-    asslist$sigmaR<-"Recruitment variability slot 'sigmaR' not specified in sheet '12. Fishery Data', values in the range 0.3-0.9 are assumed"
+    asslist$sigmaR<-"Recruitment variability slot 'sigmaR' not specified in sheet '12. Fishery Data'. Values in the range 0.3-0.9 were assumed."
     OM@Perr<-c(0.3,0.9)
     OM@cpars$Perr<-runif(nsim,0.3,0.9)
   }else{
-    OM@Perr<-rep(Data$sigmaR,2)
-    OM@cpars$Perr<-rep(sigmaR,nsim)
+    OM@Perr<-rep(Data@sigmaR,2)
+    OM@cpars$Perr<-rep(Data@sigmaR,nsim)
   }
 
   trends<-matrix(Data@Effort,nrow=nsim,ncol=Nyears,byrow=T)
@@ -275,7 +316,7 @@ makeOM <- function(FPIfile) {
   }else{
     OM@L5<-rep(Data@LFC,2)
     if(is.na(Data@CV_LFC)){
-      asslist$CV_LFC<- "Coefficient of variation in length at first capture not specified in sheet '12. Fishery Data' - assuming a CV value of 0.15"
+      asslist$CV_LFC<- "Coefficient of variation in length at first capture not specified in sheet '12. Fishery Data'. A CV value of 0.15 was assumed."
       OM@cpars$L5 <- trlnorm(nsim,Data@LFC,0.15)
     }else{
       OM@cpars$L5 <- trlnorm(nsim,Data@LFC,Data@CV_LFC)
@@ -287,7 +328,7 @@ makeOM <- function(FPIfile) {
   }else{
     OM@LFS<-rep(Data@LFS,2)
     if(is.na(Data@CV_LFS)){
-      asslist$CV_LFS<- "Coefficient of variation in length at full selection not specified in sheet '12. Fishery Data' - assuming a CV value of 0.15"
+      asslist$CV_LFS<- "Coefficient of variation in length at full selection not specified in sheet '12. Fishery Data'. A CV value of 0.15 was assumed."
       OM@cpars$LFS <- trlnorm(nsim,Data@LFS,0.15)
     }else{
       OM@cpars$LFS <- trlnorm(nsim,Data@LFS,Data@CV_LFS)
@@ -295,17 +336,12 @@ makeOM <- function(FPIfile) {
   }
 
   if (is.na(Data@Vmaxlen)) {
-    asslist$Vmaxlen<-"Length at full selection not specified in sheet '12. Fishery Data' - assuming 'flat-topped' logistic selectivity"
-    OM@LFS<-rep(Data@LFS,2)
+    asslist$Vmaxlen<-"Vulnerability at asymptotic length not specified in sheet '12. Fishery Data'. A 'flat-topped' logistic selectivity was assumed. "
+    OM@Vmaxlen<-rep(1,2)
     OM@cpars$Vmaxlen<-rep(1,nsim)
   }else{
-    OM@LFS<-rep(Data@LFS,2)
-    if(is.na(Data@CV_LFS)){
-      asslist$CV_LFS<- "Coefficient of variation in length at full selection not specified in sheet '12. Fishery Data' - assuming a CV value of 0.15"
-      OM@cpars$LFS <- trlnorm(nsim,Data@LFS,0.15)
-    }else{
-      OM@cpars$LFS <- trlnorm(nsim,Data@LFS,Data@CV_LFS)
-    }
+    OM@Vmaxlen<-rep(Data@Vmaxlen,2)
+    OM@cpars$Vmaxlen<-rep(Data@Vmaxlen,nsim)
   }
 
 
@@ -377,13 +413,14 @@ makeOM <- function(FPIfile) {
   OM@cpars$MPA[Nyears:OM@proyears,1]<-0
 
   # ! Initial depletion defaults to unfished !
+  asslist$InitD <- "Initial historical depletion was assumed to be 1 (starting from unfished conditions)."
 
   # ---- Management parameters -----------------------------------------------------------------------------------------------
 
   # MP type feasible
   # M1in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[9], "[0-9]+")[[1]])
   # TAC, TAE, Size, Time-area
-  asslist$Manage_bias<-"TACs, TAEs and size limits are assumed to be taken without consistent overrages or underages"
+  asslist$Manage_bias<-"TACs, TAEs and size limits are assumed to be taken without consistent overrages or underages."
   OM@TACFrac <- OM@TAEFrac <- OM@SizeLimFrac <- rep(1,2)
 
   Vmin <- c(0,    0.01, 0.05, 0.1, 0.2)
@@ -421,15 +458,22 @@ makeOM <- function(FPIfile) {
 
   #}
 
-  AM("------------- FPI+ input file loaded correctly --------------")
 
   if(length(errlist)!=0){
-    shinyalert(title="The FPAT excel file was not imported:", text=paste(unlist(errlist),collapse="\n"), type="error")
+    shinyalert(title="The FPAT excel file was not loaded", text=paste(unlist(errlist),collapse="\n\n"), type="error")
+    AM("--- Load Errors ----------------")
+    AM(paste(unlist(errlist),collapse="\n"))
     OM<-NULL
   }else{
     if(length(asslist)!=0){
-      shinyalert(title="When importing the FPAT spreadsheet the following assumptions were made:", text=paste(unlist(asslist),collapse="\n"), type="info")
+      shinyalert(title="When importing the FPAT spreadsheet the following assumptions were made:", text=paste(unlist(asslist),collapse="\n\n"), type="info")
+      AM("--- Loading assumptions ----------------")
+      AM(paste(unlist(asslist),collapse="\n"))
+
+      AM("=== FPI+ input file loaded correctly =========================")
+
     }
+    OM@cpars$control=list(progress=T,ntrials=1000,fracD=0.2)
   }
 
   OM

@@ -10,6 +10,7 @@ library(shinyalert)
 library(readxl)
 library(stringr)
 library(MSEtool)
+library(DLMtool)
 
 #source('../../../R/plotFPIs.R')
 for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl))

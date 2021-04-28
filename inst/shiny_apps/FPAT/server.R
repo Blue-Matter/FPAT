@@ -20,28 +20,42 @@ server <- function(input, output, session) {
   outputOptions(output, "MSE", suspendWhenHidden = FALSE)
 
   Info <- reactiveValues(
-    file=NULL, # input file
-    Summary=NULL, # FPI summary tab
-    Output_table=NULL, # FPI output-table
-    Input_table=NULL#,
-    #OM = NULL  # Operating models
+    file=NULL,          # input file
+    sheets=NULL,        # Sheet names
+    Summary=NULL,       # FPI summary tab
+    Output_table=NULL,  # FPI output-table
+    Input_table=NULL,   # FPI input-table
+    Data = NULL,        # Data
+    MERA.Qs = NULL,     # M
+    FPI.Inputs = NULL,  # FPI inputs table
+    FPI.Cover = NULL,   # FPI cover sheet
+    OM = NULL,          # Operating model
+    MSEhist = NULL,     # Historical reconstruction
+    MSEproj = NULL,     # MSE projection
+    MPsel = c("CurC","curEref")        # Selected MPs for running the MSE
   )
 
   # splash page
   Home_Server('Home1')
-  Load_Server('Load1', Info=Info)
-  Fishery_Server('Fishery1')
-  Manage_Server('Manage1')
-  Results_Server('Results1')
-  FPI_Server("FPI1")
+  Load_Server('Load1', Info=Info, Toggles=Toggles)
+  Inputs_Server('Inputs1',Info=Info)
+  Results_Server('Results1',Info=Info)
+
 
   USERID<-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
   SessionID<-paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])
   output$SessionID<-renderText(SessionID)
 
   # Log stuff
-  Log_text <- reactiveValues(text=paste0("-------- Start of Session -------- \nSession ID: ",SessionID,"\nUser ID: ",USERID))
+  AM<<-function(newtext)   Log_text$text<-paste(newtext, Log_text$text, sep = "\n")
+  Log_text <- reactiveValues(text=paste0("======= Start of Session ======= \nSession ID: ",SessionID,"\nUser ID: ",USERID))
   output$Log <- renderText(Log_text$text)
+  output$Download_Log <-downloadHandler(
+    filename = function(){"FPAT_Log.txt"},
+    content = function(file) {
+      writeLines(paste(Log_text$text, collapse = ", "), file)
+    }
+  )
 
 
 }
