@@ -70,6 +70,17 @@ The FPAT input file is a specially formatted Excel (.xlsx) workbook, populated w
 
 See the [FPAT Data Manual]() for instruction on collecting the fishery data used by FPAT and entering the data into the FPAT input file. 
 
+## Overview of Spreadsheet
+
+
+<img src="Data_1_Instructions.jpg" width="660">
+
+
+## Introduction
+
+
+<img src="Data_2_Introduction.jpg" width="660">
+
 
 # Overview of the FPAT App
 
