@@ -38,7 +38,8 @@ server <- function(input, output, session) {
   # splash page
   Home_Server('Home1')
   Load_Server('Load1', Info=Info, Toggles=Toggles)
-  Inputs_Server('Inputs1',Info=Info)
+  FPI_Server('FPI1',Info=Info)
+  HistDynamics_Server('dynamics', Info=Info)
   Results_Server('Results1',Info=Info)
 
 

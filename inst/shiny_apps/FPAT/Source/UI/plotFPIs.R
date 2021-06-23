@@ -5,10 +5,20 @@ if (!chk) {
   library(fmsb)
 }
 library(dplyr)
+library(RColorBrewer)
+
+
+add.alpha <- function(col, alpha=1){
+  if(missing(col))
+    stop("Please provide a vector of colours.")
+  apply(sapply(col, col2rgb)/255, 2,
+        function(x)
+          rgb(x[1], x[2], x[3], alpha=alpha))
+}
 
 # ---- Functions ----
 
-radar_plot <- function(DF, title, n=25, vlcex=1) {
+radar_plot <- function(DF, title, n=25, vlcex=1, BaseLineDat=NULL) {
   for (i in 2:nrow(DF)) {
     if (is.na(DF[i,1]))
       DF[i,1] <- DF[i-1,1]
@@ -26,38 +36,100 @@ radar_plot <- function(DF, title, n=25, vlcex=1) {
   DF3 <- rbind(max, min, DF2)
   cols <- rev(2:ncol(DF3))
   DF3 <- DF3[, c(1, cols)]
+  DF3 <- as.data.frame(DF3)
+
+  # add baseline
+  if (!is.null(BaseLineDat)) {
+    rownames(DF3) <- c('Min', 'Max', 'Fishery')
+    for (i in 1:ncol(BaseLineDat)) {
+      bldf <- DF3[3,]
+      bldf[1:ncol(bldf)] <- t(BaseLineDat[,i])
+      rownames(bldf) <- colnames(BaseLineDat[,i] )
+      DF3 <- rbind(DF3, bldf)
+    }
+  }
+
+  # colors
+  cols <- RColorBrewer::brewer.pal(n=max(3,nrow(DF3)-2), 'Set1')
+
+  pcol <- cols
+  pfcol <- cols
+  pfcol[1] <- add.alpha(cols[1], 0.5)
+  pfcol[2:length(pfcol)] <- add.alpha(cols[2:length(pfcol)], 0.3)
+
   par(mfrow=c(1,1), oma=c(0,0,0,0), mar=c(2,2,2,2), xpd=TRUE)
   fmsb::radarchart(DF3, axistype=1, centerzero=TRUE, caxislabels=0:5, seg=5,
-                   pcol=rgb(0.2,0.5,0.5,0.9), pfcol=rgb(0.2,0.5,0.5,0.5),
+                   pcol=pcol, pfcol=pfcol,
                    plwd=2,cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8,
                    title=title, vlcex=vlcex)
 
+  if (!is.null(BaseLineDat)) {
+    legend(
+      x = "bottom", legend = rownames(DF3[-c(1,2),]), horiz = TRUE,
+      bty = "n", pch = 20 , col =pcol,
+      text.col = "black", cex = 1.25, pt.cex = 2
+    )
+  }
+
 }
 
-output_dim_scores <- function(FPI.Summary, n=25, vlcex=1) {
+output_dim_scores <- function(FPI.Summary, baseline, BaseLine, n=25, vlcex=1) {
+
+  # baseline
+  BaseLineDat <- NULL
+  if (!is.null(baseline)) {
+    cols <- which(BaseLine[1,2:ncol(BaseLine)] %in% baseline) + 1
+    rows <- 39:49
+    BaseLineDat <- BaseLine[rows,cols]
+    BaseLineDat <- BaseLineDat %>% mutate_all(., as.numeric)
+    colnames(BaseLineDat) <- baseline
+  }
+
   # this isn't very robust!!
   first <- which(FPI.Summary[,1] == "INDICATOR")[1] +1
   last <- which(FPI.Summary[,2]=='Processing Workers')
   DF <- FPI.Summary[first:last, 1:3]
   colnames(DF) <- c('a', 'b', 'c')
-  radar_plot(DF, title=NULL, n=n, vlcex=vlcex)
+  radar_plot(DF, title=NULL, n=n, vlcex=vlcex, BaseLineDat)
 }
 
-input_dim_scores <- function(FPI.Summary, n=25, vlcex=1) {
+input_dim_scores <- function(FPI.Summary, baseline, BaseLine, n=25, vlcex=1) {
+  # baseline
+  BaseLineDat <- NULL
+  if (!is.null(baseline)) {
+    cols <- which(BaseLine[1,2:ncol(BaseLine)] %in% baseline) + 1
+    rows <- 19:33
+    BaseLineDat <- BaseLine[rows,cols]
+    BaseLineDat <- BaseLineDat %>% mutate_all(., as.numeric)
+    colnames(BaseLineDat) <- baseline
+  }
+
   first <- which(FPI.Summary[,1] == "COMPONENT")[1] +1
   last <- which(FPI.Summary[,2]=='Infrastructure')
   DF <- FPI.Summary[first:last, 1:3]
   colnames(DF) <- c('a', 'b', 'c')
-  radar_plot(DF, title=NULL, n=n, vlcex=vlcex)
+  radar_plot(DF, title=NULL, n=n, vlcex=vlcex, BaseLineDat)
 }
 
-output_scores_TBL <- function(FPI.Summary, n=25, vlcex=1) {
+output_scores_TBL <- function(FPI.Summary, baseline, BaseLine, n=25, vlcex=1) {
+  # baseline
+  BaseLineDat <- NULL
+  if (!is.null(baseline)) {
+    cols <- which(BaseLine[1,2:ncol(BaseLine)] %in% baseline) + 1
+    rows <- 2:15
+    BaseLineDat <- BaseLine[rows,cols]
+    BaseLineDat <- BaseLineDat %>% mutate_all(., as.numeric)
+    colnames(BaseLineDat) <- baseline
+  }
+
   first <- which(FPI.Summary[,1] == "INDICATOR")[2] +1
   last <- which(FPI.Summary[,2]=='Career')
   DF <- FPI.Summary[first:last, 1:3]
   colnames(DF) <- c('a', 'b', 'c')
-  radar_plot(DF, title=NULL, n=n, vlcex=vlcex)
+  radar_plot(DF, title=NULL, n=n, vlcex=vlcex, BaseLineDat)
 }
+
+
 
 FSHEP <- function(Output.table, n=25, vlcex=1) {
   first <- which(Output.table[,4] == "Percentage of Stocks Overfished")

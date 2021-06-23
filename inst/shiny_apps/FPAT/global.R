@@ -25,6 +25,29 @@ Syear<<-1951
 Lyear<<-2018
 
 
+baseline_file <- './Data/Baseline.xlsx'
+
+BaseLine <<- readxl::read_excel(baseline_file) # baseline FPI scores
+
+options <- BaseLine[1,2:ncol(BaseLine)]
+
+categories_all <- colnames(options)
+categories <- categories_all[!grepl('\\...', categories_all)]
+
+BaseLineChoices <- list()
+for (i in seq_along(categories)) {
+  cat <- categories[i]
+  fst <- which(categories_all ==categories[i])
+  lst <- which(categories_all ==categories[i+1])-1
+  if (length(lst)<1) lst <- length(options)
+  opts <- options[fst:lst]
+
+  BaseLineChoices[[cat]] <- as.character(opts[1,])
+}
+
+BaseLineChoices <<- BaseLineChoices
+
+
 
 
 

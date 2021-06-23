@@ -177,12 +177,17 @@ fluidPage(
                        box_height='55px'),
 
       verticalTabPanel(value=3,
-                       h5(strong("2. Inputs")),
-                       Inputs_UI('Inputs1'),
+                       h5(strong("2. FPI Scores")),
+                       FPI_UI('FPI1'),
+                       box_height='55px'),
+
+      verticalTabPanel(value=4,
+                       h5(strong("3. Fishery Dynamics")),
+                       HistDynamics_UI('dynamics'),
                        box_height='55px'),
 
       verticalTabPanel(value=5,
-                       h5(strong("3. Results")),
+                       h5(strong("4. Projections")),
                        Results_UI('Results1'),
                        box_height='55px'),
 
