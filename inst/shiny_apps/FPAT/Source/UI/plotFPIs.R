@@ -5,7 +5,12 @@ if (!chk) {
   library(fmsb)
 }
 library(dplyr)
-library(RColorBrewer)
+
+chk <- suppressWarnings(require(RColorBrewer, quietly = TRUE))
+if (!chk) {
+  install.packages('RColorBrewer')
+  library(RColorBrewer)
+}
 
 
 add.alpha <- function(col, alpha=1){
