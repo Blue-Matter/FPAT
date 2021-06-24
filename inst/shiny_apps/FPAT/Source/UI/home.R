@@ -30,7 +30,7 @@ Home_Server <- function(id) {
         innovative approaches to improve governance and strengthening the seafood value chain. <br> <br>
 
         CFI provides financial and hands-on technical support to coastal fisheries in six countries across three geographies:
-        Indonesia, Latin America (Ecuador and Peru) and West Africa (Cape Verde, Côte d'Ivoire and Senegal). <br> <br>
+        Indonesia, Latin America (Ecuador and Peru) and West Africa (Cape Verde, Cote d'Ivoire and Senegal). <br> <br>
 
         <b> The Fishery Performance Assessment Toolkit (FPAT) </b> <br> <br>
 
