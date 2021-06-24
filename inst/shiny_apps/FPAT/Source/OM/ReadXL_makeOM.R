@@ -9,7 +9,7 @@ fetchOM<-function(Info, Toggles, session){
   Info$Summary <- readxl::read_excel(Info$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
   Info$Output_table <- readxl::read_excel(Info$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
   Info$Data <- XL2Data(name=Info$file$datapath, sheet='12. Fishery Data')
-  Info$MERA.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. MERA Questions', .name_repair = 'minimal')
+  Info$openMSE.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
   Info$FPI.Inputs <- readxl::read_excel(Info$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
   Info$FPI.Cover <- readxl::read_excel(Info$file$datapath, sheet='3. Cover Page', .name_repair = 'minimal')
 
@@ -128,9 +128,9 @@ makeOM <- function(Info) {
 
   sheets <- Info$sheets
   if (!'12. Fishery Data' %in% sheets) errlist$Datasheet <- "FPI+ is missing '12. Fishery Data' sheet"
-  if (!'13. MERA Questions' %in% sheets) errlist$MERAsheet <- "FPI+ is missing '13. MERA Questions' sheet"
+  if (!'13. openMSE Questions' %in% sheets) errlist$openMSEsheet <- "FPI+ is missing '13. openMSE Questions' sheet"
   Data <- Info$Data #XL2Data(name=FPIfile, sheet='12. Fishery Data')
-  MERA.Qs <- Info$MERA.Qs #readxl::read_excel(FPIfile, sheet='13. MERA Questions', .name_repair = 'minimal')
+  openMSE.Qs <- Info$openMSE.Qs #readxl::read_excel(FPIfile, sheet='13. openMSE Questions', .name_repair = 'minimal')
   FPI.Inputs <- Info$FPI.Inputs #readxl::read_excel(FPIfile, sheet='6. Input-table', .name_repair = 'minimal')
   FPI.Cover <- Info$FPI.Cover #readxl::read_excel(FPIfile, sheet='3. Cover Page', .name_repair = 'minimal')
 
@@ -166,8 +166,8 @@ makeOM <- function(Info) {
   ind <- which(FPI.Inputs[,3] == "Data Availability")
   DataQual <- FPI.Inputs[ind,6]
   if (DataQual < 3 ) temp<-new('OM',Albacore,Generic_Fleet,Imprecise_Biased,Perfect_Imp)
-  if (DataQual == 3) MERA_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Generic_obs,Perfect_Imp)
-  if (DataQual > 3) MERA_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Precise_Unbiased,Perfect_Imp)
+  if (DataQual == 3) openMSE_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Generic_obs,Perfect_Imp)
+  if (DataQual > 3) openMSE_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Precise_Unbiased,Perfect_Imp)
   OM<-Replace(OM,temp,Sub="Obs")
 
   OM@cpars<-list()
@@ -289,14 +289,14 @@ makeOM <- function(Info) {
   nt<-dim(trends)[1]
   Esdmins<-c(0,0.2,0.5)
   Esdmaxes<-c(0.2,0.5,0.8)
-  ind<- MERA.Qs$Score[1]
+  ind<- openMSE.Qs$Score[1]
   Esdrand<-runif(nsim,Esdmins[ind],Esdmaxes[ind]) #runif(nsim,Esd_min,Esd_max)
   Emu<-(-0.5*Esdrand^2)
   Esdarray<-array(exp(rnorm(nsim*Nyears,Emu,Esdrand)),c(nsim,Nyears))
 
   qmins<-c(-1,1,2,-2,-3)
   qmaxes<-c(1,2,3,-1,-2)
-  ind<- MERA.Qs$Score[2]
+  ind<- openMSE.Qs$Score[2]
   qhssim<-runif(nsim,qmins[ind],qmaxes[ind]) #(nsim,qhs[1],qhs[2])
   qssim<-1+qhssim/100                                                   # F7 ----------
   trendsamp<-ceiling(runif(nsim)*nt)
@@ -347,13 +347,13 @@ makeOM <- function(Info) {
 
   # --- Discarding ------------------------
 
-  ind <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[3], "[0-9]+")[[1]])
+  ind <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[3], "[0-9]+")[[1]])
   DRmin<-c(0,0.05,0.25,0.5,0.75,0.95)
   DRmax<-c(0.05,0.25,0.5,0.75,0.95,1)
   OM@DR<-c(DRmin[ind],DRmax[ind])
   OM@cpars$DR<-runif(nsim,DRmin[ind],DRmax[ind])
 
-  ind <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[4], "[0-9]+")[[1]])
+  ind <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[4], "[0-9]+")[[1]])
   OM@Fdisc<-c(DRmin[ind],DRmax[ind])
   OM@cpars$Fdisc<-runif(nsim,DRmin[ind],DRmax[ind])
 
@@ -371,13 +371,13 @@ makeOM <- function(Info) {
   MPAq <- as.integer(FPI.Inputs[ind,6])
   Ahrng<-c(minA1[MPAq],maxA1[MPAq])
 
-  ind <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[5], "[0-9]+")[[1]])
+  ind <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[5], "[0-9]+")[[1]])
   Vhrng<-c(minmix[ind],maxmix[ind])
 
-  ind <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[6], "[0-9]+")[[1]])
+  ind <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[6], "[0-9]+")[[1]])
   Arng<-c(minA[ind],maxA[ind])
 
-  ind <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[7], "[0-9]+")[[1]])
+  ind <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[7], "[0-9]+")[[1]])
   Vrng<-c(minmix[ind],maxmix[ind])
 
   nareas<-3
@@ -418,7 +418,7 @@ makeOM <- function(Info) {
   # ---- Management parameters -----------------------------------------------------------------------------------------------
 
   # MP type feasible
-  # M1in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[9], "[0-9]+")[[1]])
+  # M1in <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[9], "[0-9]+")[[1]])
   # TAC, TAE, Size, Time-area
   asslist$Manage_bias<-"TACs, TAEs and size limits are assumed to be taken without consistent overrages or underages."
   OM@TACFrac <- OM@TAEFrac <- OM@SizeLimFrac <- rep(1,2)
@@ -432,14 +432,14 @@ makeOM <- function(Info) {
 
   # ---- Data parameters -----------------------------------------------------------------------------------------------------
 
-  CobsB <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[9], "[0-9]+")[[1]])
+  CobsB <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[9], "[0-9]+")[[1]])
   Bmin<-c(0.5, 0.7, 0.9,0.95, 1)   # for TAC and TAE
   Bmax<-c(0.7, 0.9, 1,  1.05, 1.1) # for TAC and TAE
   OM@cpars$Cbias<-runif(nsim, Bmin[CobsB],Bmax[CobsB])
 
   betamin<-c(2,1.25,0.8,0.5,0.33)
   betamax<-c(3,2,1.25,0.8,0.5)
-  D3in <- as.numeric(stringr::str_extract_all(MERA.Qs$Score[9], "[0-9]+")[[1]])
+  D3in <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[9], "[0-9]+")[[1]])
   OM@beta<-c(betamin[D3in],betamax[D3in])                                          # D3 -----------
 
 
