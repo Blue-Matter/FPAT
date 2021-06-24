@@ -80,6 +80,11 @@ FPAT includes two tools:
 
 <br>
 
+<img src="FPAT schematic.jpg" width="660">
+
+
+<br>
+
 <img src="Splash.jpg" width="660">
 
 <br>
@@ -90,12 +95,15 @@ FPIs were developed to facilitate a rapid assessment of the economic, social, an
 
 FPIs utilize published data when available, but also incorporate expert judgement and interviews with key informants to “score” a fishery’s performance against the triple bottom line (ecological, economic, and social). Once research and fieldwork data are collected, FPI [assessments](https://drive.google.com/file/d/1JeJqm31eaMn6TaxV1RMbYU5DtiCMfj4p/view) are created by populating a template in spreadsheet software (e.g., Microsoft Excel). For the CFI FPAT assessments, a Governance Supplement has been added to the standard FPI format to better understand the effect of legal, social, economic, and political arrangements on fisheries management. 
 
+<br>
 
 ## OpenMSE (Blue Matter Science)
 
 [OpenMSE](www.openmse.com) is an open-source R package for conducting Management Strategy Evaluation (MSE)- a quantitative framework where management options are tested plausible scenarios of fishery dynamics (operating models, states of nature)(Butterworth and Punt 1999). OpenMSE contains component R packages DLMtool [(Carruthers and Hordyk, 2018)](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.13081), MSEtool (Hordyk et al. 2021) and SAMtool (Huynh et al. 2021). 
 
 OpenMSE uses data on fisheries biology, economics, and harvesting practices to predict the how alternative management options (e.g. setting harvesting levels above, below, or equal to FMSY ) will affect biological and economic outcomes. The importance of risk assessment  for alternate management strategies has long been recognized (Francis & Shotton 1997), but not operationalized in an accessible framework such as openMSE which provides managers with a powerful tool for identifying species-at-risk, selecting management procedures that can achieve their performance objectives, and calculating stock status. 
+
+<br>
 
 # FPAT Input File
 The FPAT input file is a specially formatted Excel (.xlsx) workbook, populated with fishery performance indicators and as much fishery data (e.g., catches, estimates of biological parameters) that is available. 
@@ -107,8 +115,9 @@ See the [FPAT Data Manual]() for instruction on collecting the fishery data used
 
 <img src="Data_1_Instructions.jpg" width="660">
 
+<br>
 
-## Introduction
+## Introduction Sheet
 
 
 <img src="Data_2_Introduction.jpg" width="660">
