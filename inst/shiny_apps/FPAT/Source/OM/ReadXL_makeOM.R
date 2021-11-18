@@ -202,7 +202,7 @@ makeOM <- function(Info) {
   }
 
   if(is.na(Data@vbLinf)){
-    errlist$vbLinf<-"Asymptotic length 'Von Bertalantffy Linf parameter' not specified in sheet '12. Fishery Data'"
+    errlist$vbLinf<-"'Von Bertalantffy Linf parameter' not specified in sheet '12. Fishery Data'"
   }else{
     OM@Linf<-rep(Data@vbLinf,2)
     if(is.na(Data@CV_vbLinf)){
@@ -214,7 +214,7 @@ makeOM <- function(Info) {
   }
 
   if(is.na(Data@vbK)){
-    errlist$vbK<-"Asymptotic length 'Von Bertalantffy K parameter' not specified in sheet '12. Fishery Data'"
+    errlist$vbK<-"'Von Bertalantffy K parameter' not specified in sheet '12. Fishery Data'"
   }else{
     OM@K<-rep(Data@vbK,2)
     if(is.na(Data@CV_vbK)){
