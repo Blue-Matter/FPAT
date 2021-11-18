@@ -15,6 +15,7 @@ fetchOM<-function(Info, Toggles, session){
 
   # make the operating model
 
+
   tryCatch({
 
     Info$OM<-makeOM(Info)
@@ -27,7 +28,7 @@ fetchOM<-function(Info, Toggles, session){
       updateVerticalTabsetPanel(session,'Main',selected=3)
     }
     #saveRDS(MSEhist,"C:/temp/MSEhist.rda") #
-    runProj(Info)
+    # runProj(Info)
 
   },
 
@@ -137,7 +138,7 @@ makeOM <- function(Info) {
   plusgroup<-40
 
   OM<-LowSlopes(MSEtool::testOM)
-  OM@nsim<-nsim<-24
+  OM@nsim<-nsim<- 24
   OM@interval<-4
   OM@proyears<-30
   OM@seed<-1
@@ -466,7 +467,7 @@ makeOM <- function(Info) {
     OM<-NULL
   }else{
     if(length(asslist)!=0){
-      shinyalert(title="When importing the FPAT spreadsheet the following assumptions were made:", text=paste(unlist(asslist),collapse="\n\n"), type="info")
+      shinyalert(title="When importing the FPAT spreadsheet the following assumptions were made:", text=paste(unlist(asslist),collapse="\n\n"), type="info", size='l')
       AM("--- Loading assumptions ----------------")
       AM(paste(unlist(asslist),collapse="\n"))
 

@@ -1,3 +1,4 @@
+
 library(dplyr)
 library(DT)
 library(ggplot2)
@@ -9,20 +10,32 @@ library(shinydashboard)
 library(shinyalert)
 library(readxl)
 library(stringr)
-library(MSEtool)
-library(DLMtool)
+library(openMSE)
+
 
 #source('../../../R/plotFPIs.R')
 for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl))
 for (fl in list.files("./Source/OM")) source(file.path("./Source/OM", fl),local=T)
 for (fl in list.files("./Source/Misc")) source(file.path("./Source/Misc", fl))
 
+
+CheckLoaded <- function(Info) {
+  renderUI({
+    if(is.null(Info$file))
+      return(h4('FPAT data file not loaded. Please return to Load and load an FPAT data file', style = "color:red"))
+    if(!is.null(Info$file) & is.null(Info$MSEhist))
+      return(h4('Simulations are still running. Please wait...', style = "color:red"))
+  })
+}
+
+
 # Shared variables
 
 Current_Year<<-as.integer(substr(Sys.time(),start=1,stop=4))
-CurrentYr<<-2021 # as.integer(input$Lyear) #as.integer(substr(as.character(Sys.time()),1,4))
-Syear<<-1951
-Lyear<<-2018
+
+# CurrentYr<<-2021 # as.integer(input$Lyear) #as.integer(substr(as.character(Sys.time()),1,4))
+# Syear<<-1951
+# Lyear<<-2018
 
 
 baseline_file <- './Data/Baseline.xlsx'
@@ -46,6 +59,8 @@ for (i in seq_along(categories)) {
 }
 
 BaseLineChoices <<- BaseLineChoices
+
+
 
 
 

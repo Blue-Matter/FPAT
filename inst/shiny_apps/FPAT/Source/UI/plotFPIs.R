@@ -23,7 +23,7 @@ add.alpha <- function(col, alpha=1){
 
 # ---- Functions ----
 
-radar_plot <- function(DF, title, n=25, vlcex=1, BaseLineDat=NULL) {
+radar_plot <- function(DF, title, n=25, vlcex=1, BaseLineDat=NULL, FPI_2DF=NULL) {
   for (i in 2:nrow(DF)) {
     if (is.na(DF[i,1]))
       DF[i,1] <- DF[i-1,1]
@@ -42,16 +42,29 @@ radar_plot <- function(DF, title, n=25, vlcex=1, BaseLineDat=NULL) {
   cols <- rev(2:ncol(DF3))
   DF3 <- DF3[, c(1, cols)]
   DF3 <- as.data.frame(DF3)
-
+  rownames(DF3) <- c('Min', 'Max', 'Fishery')
   # add baseline
   if (!is.null(BaseLineDat)) {
-    rownames(DF3) <- c('Min', 'Max', 'Fishery')
     for (i in 1:ncol(BaseLineDat)) {
       bldf <- DF3[3,]
       bldf[1:ncol(bldf)] <- t(BaseLineDat[,i])
       rownames(bldf) <- colnames(BaseLineDat[,i] )
       DF3 <- rbind(DF3, bldf)
     }
+  }
+
+  # add comparison FPI
+  if (!is.null(FPI_2DF)) {
+    for (i in 2:nrow(FPI_2DF)) {
+      if (is.na(FPI_2DF[i,1]))
+        FPI_2DF[i,1] <- FPI_2DF[i-1,1]
+    }
+    FPI_2DF <- t(FPI_2DF)
+    cols <- rev(2:ncol(FPI_2DF))
+    FPI_2DF <- FPI_2DF[,c(1, cols)]
+    DF3 <- rbind(DF3, as.numeric(FPI_2DF[3,]))
+    rownames(DF3)[length(rownames(DF3))] <-  'Comparison FPI'
+
   }
 
   # colors
@@ -68,7 +81,7 @@ radar_plot <- function(DF, title, n=25, vlcex=1, BaseLineDat=NULL) {
                    plwd=2,cglcol="grey", cglty=1, axislabcol="grey", cglwd=0.8,
                    title=title, vlcex=vlcex)
 
-  if (!is.null(BaseLineDat)) {
+  if (!is.null(BaseLineDat) | !is.null(FPI_2DF)) {
     legend(
       x = "bottom", legend = rownames(DF3[-c(1,2),]), horiz = TRUE,
       bty = "n", pch = 20 , col =pcol,
@@ -78,7 +91,7 @@ radar_plot <- function(DF, title, n=25, vlcex=1, BaseLineDat=NULL) {
 
 }
 
-output_dim_scores <- function(FPI.Summary, baseline, BaseLine, n=25, vlcex=1) {
+output_dim_scores <- function(FPI.Summary, baseline, BaseLine, FPI_2=NULL, n=25, vlcex=1) {
 
   # baseline
   BaseLineDat <- NULL
@@ -90,15 +103,25 @@ output_dim_scores <- function(FPI.Summary, baseline, BaseLine, n=25, vlcex=1) {
     colnames(BaseLineDat) <- baseline
   }
 
-  # this isn't very robust!!
+  # FPI scores
   first <- which(FPI.Summary[,1] == "INDICATOR")[1] +1
   last <- which(FPI.Summary[,2]=='Processing Workers')
   DF <- FPI.Summary[first:last, 1:3]
   colnames(DF) <- c('a', 'b', 'c')
-  radar_plot(DF, title=NULL, n=n, vlcex=vlcex, BaseLineDat)
+
+  FPI_2DF <- NULL
+  if (!is.null(FPI_2)) {
+    first <- which(FPI_2[,1] == "INDICATOR")[1] +1
+    last <- which(FPI_2[,2]=='Processing Workers')
+    FPI_2DF <- FPI_2[first:last, 1:3]
+    colnames(FPI_2DF) <- c('a', 'b', 'c')
+  }
+
+  radar_plot(DF, title=NULL, n=n, vlcex=vlcex, BaseLineDat, FPI_2DF)
 }
 
-input_dim_scores <- function(FPI.Summary, baseline, BaseLine, n=25, vlcex=1) {
+
+input_dim_scores <- function(FPI.Summary, baseline, BaseLine, FPI_2=NULL, n=25, vlcex=1) {
   # baseline
   BaseLineDat <- NULL
   if (!is.null(baseline)) {
@@ -113,10 +136,18 @@ input_dim_scores <- function(FPI.Summary, baseline, BaseLine, n=25, vlcex=1) {
   last <- which(FPI.Summary[,2]=='Infrastructure')
   DF <- FPI.Summary[first:last, 1:3]
   colnames(DF) <- c('a', 'b', 'c')
-  radar_plot(DF, title=NULL, n=n, vlcex=vlcex, BaseLineDat)
+
+  FPI_2DF <- NULL
+  if (!is.null(FPI_2)) {
+    first <- which(FPI_2[,1] == "COMPONENT")[1] +1
+    last <- which(FPI_2[,2]=='Infrastructure')
+    FPI_2DF <- FPI_2[first:last, 1:3]
+    colnames(FPI_2DF) <- c('a', 'b', 'c')
+  }
+  radar_plot(DF, title=NULL, n=n, vlcex=vlcex, BaseLineDat, FPI_2DF)
 }
 
-output_scores_TBL <- function(FPI.Summary, baseline, BaseLine, n=25, vlcex=1) {
+output_scores_TBL <- function(FPI.Summary, baseline, BaseLine, FPI_2=NULL, n=25, vlcex=1) {
   # baseline
   BaseLineDat <- NULL
   if (!is.null(baseline)) {
@@ -131,7 +162,16 @@ output_scores_TBL <- function(FPI.Summary, baseline, BaseLine, n=25, vlcex=1) {
   last <- which(FPI.Summary[,2]=='Career')
   DF <- FPI.Summary[first:last, 1:3]
   colnames(DF) <- c('a', 'b', 'c')
-  radar_plot(DF, title=NULL, n=n, vlcex=vlcex, BaseLineDat)
+
+  FPI_2DF <- NULL
+  if (!is.null(FPI_2)) {
+    first <- which(FPI_2[,1] == "INDICATOR")[2] +1
+    last <- which(FPI_2[,2]=='Career')
+    FPI_2DF <- FPI_2[first:last, 1:3]
+    colnames(FPI_2DF) <- c('a', 'b', 'c')
+  }
+
+  radar_plot(DF, title=NULL, n=n, vlcex=vlcex, BaseLineDat, FPI_2DF)
 }
 
 

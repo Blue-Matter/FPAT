@@ -1,223 +1,175 @@
 
-BaseLineSelectUI <- function(id) {
-  ns <- NS(id)
-  tagList(
-    shiny::selectInput(ns('baseline'), 'Baseline Comparision',
-                       choices=BaseLineChoices,
-                       multiple = TRUE)
-  )
-}
-
-BaseLineSelectServer <- function(id) {
-  moduleServer(id,
-               function(input, output, session) {
-                 input$baseline
-
-               }
-  )
-}
 
 FPI_UI <- function(id, label="Inputs") {
-
   ns <- NS(id)
   fluidPage(
     fluidRow(
       column(12,
-             HTML('<br>'),
-             htmlOutput(ns("Intro")),
-             HTML('<br>'),
-
-             tabsetPanel(
-
-               # Output Dimension Scores
-               tabPanel(h5('Outputs', style='color:black;'),
-                        value=1,
-                        br(),
-                        column(4,
-                               h4('Fishery Performance Indicators: Outputs (Measuring Wealth)'),
-                               plotOutput(ns('FPIoutput'), width='100%', height="100%")
-                        ),
-                        column(3,
-                               BaseLineSelectUI(ns('baseline1'))
-                        ),
-                        column(5,
-                               h4('Other explanatory text or tables can go here')
-                        )
-               ),
-
-               # Input Dimension Scores
-               tabPanel(h5('Inputs', style='color:black;'),
-                        value=2,
-                        br(),
-                        column(4,
-                               h4('Fishery Performance Indicators: Inputs (Enabling Wealth Creation)'),
-                               plotOutput(ns('FPIinput'), width='100%', height="100%")
-                        ),
-                        column(3,
-                               BaseLineSelectUI(ns('baseline2'))
-
-                        ),
-                        column(5,
-                               h4('Other explanatory text or tables can go here')
-                        )
-               ),
-
-               # Output Scores by TBL
-               tabPanel(h5('Output by TBL', style='color:black;'),
-                        value=3,
-                        br(),
-                        column(4,
-                               h4('Fishery Performance Indicators: Outputs by TBL Indicator'),
-                               plotOutput(ns('FPIoutputTBL'), width='100%', height="100%")
-                        ),
-                        column(3,
-                               BaseLineSelectUI(ns('baseline3'))
-
-                        ),
-                        column(5,
-                               h4('Other explanatory text or tables can go here')
-                        )
-               ),
-
-               # other plots
-               tabPanel(h5('Other FPI Plots', style='color:black;'),
-                        value=4,
-                        tabsetPanel(
-                          tabPanel(h5("Output by TBL",style = "color:black"),
-                                   fluidRow(
-                                     column(4,
-                                            h1('Indicator 1: Ecology'),
-                                            plotOutput(ns('plot4'))
-                                     ),
-                                     column(4,
-                                            h1('Indicator 2: Economics'),
-                                            plotOutput(ns('plot5')),
-                                            plotOutput(ns('plot6')),
-                                            plotOutput(ns('plot7')),
-                                            plotOutput(ns('plot8')),
-                                            plotOutput(ns('plot9')),
-                                            plotOutput(ns('plot10'))
-                                     ),
-                                     column(4,
-                                            h1('Indicator 3: Community'),
-                                            plotOutput(ns('plot11')),
-                                            plotOutput(ns('plot12')),
-                                            plotOutput(ns('plot13'))
-                                     )
-                                   ),value=2),
-                          tabPanel(h5("Output by Sector",style = "color:black"), HTML("<br>"), value=2)
-                        )
-               )
-             )
+             h3('Fishery Performance Indicators'),
+             htmlOutput(ns('checkloaded')),
+             htmlOutput(ns('FPI_results'))
       )
 
     )
   )
 }
 
-
-
-
-
-
-FPI_Server <- function(id, Info) {
+FPI_Server <- function(id, Info, FPI_2) {
   moduleServer(id,
      function(input, output, session) {
 
-       output$Intro <- renderText({
-         "This panel contains figures with summary FPI scores and option to add baseline comparisions"
+       output$checkloaded <- CheckLoaded(Info)
+
+       output$FPI_results <- renderUI({
+         if(!is.null(Info$MSEhist)) {
+           ns <- NS(id)
+           tagList(
+             fluidRow(
+               box(width=9, status='primary', solidHeader = TRUE,
+                   title='FPI Scores',
+                   tabsetPanel(
+                     # Output Sector Scores
+                     tabPanel(h5('Outputs: Sector', style='color:black;'),
+                              value=1,
+                              br(),
+                              column(7,
+                                     plotOutput(ns('FPIoutput_sector'), width='100%', height="100%")
+                              ),
+                              column(5,
+                                     h3('Outputs: Sector'),
+                                     p("FPI output scores measure the fishery's performance based on where wealth
+                                     is accumulating in the fishery.  Higher scores are better, reflecting that
+                                     more wealth is being generated in the stock resource, among fishermen and
+                                     the harvest sector, or in the processing sector."),
+                                     p('This graph is used to identify the dimensions where the fishery is performing well,
+                                     and to target dimensions for improvement.  Different fisheries may have different,
+                                     locally identified performance priorities.'),
+                                     p('As a general rule, scoring levels have been chosen so that scores below 3 reflect
+                                     the need for improvement.  The fishery may also be compared to benchmark scores for
+                                     select categories of fisheries, average scores for those fisheries in the FPI database.'),
+                                     p('Select the desired benchmark from the drop down menu or load another FPI database to
+                                     compare scores to identify dimensions where other fisheries have found ways to perform better.')
+                              )
+                     ),
+                     tabPanel(h5('Outputs: Triple Bottom Line', style='color:black;'),
+                              value=2,
+                              br(),
+                              column(7,
+                                     plotOutput(ns('FPIoutput_tbl'), width='100%', height="100%")
+                              ),
+                              column(5,
+                                     h3('Outputs: Triple Bottom Line'),
+                                     p("FPI output scores measure the fishery's performance on the pillars
+                                       of the triple bottom line.  Higher scores are better, reflecting that
+                                       the fishery is attaining more success on ecological, economic or community pillars."),
+                                     p('This graph is used to identify the dimensions where the fishery is performing well, and to target dimensions for improvement.
+                                       Different fisheries may have different, locally identified performance priorities.  '),
+                                     p('As a general rule, scoring levels have been chosen so that scores below 3 reflect
+                                     the need for improvement.  The fishery may also be compared to benchmark scores for
+                                     select categories of fisheries, average scores for those fisheries in the FPI database.'),
+                                     p('Select the desired benchmark from the drop down menu or load another FPI database to
+                                     compare scores to identify dimensions where other fisheries have found ways to perform better.')
+                              )
+                     ),
+                     tabPanel(h5('Inputs: Enabling Conditions', style='color:black;'),
+                              value=3,
+                              br(),
+                              column(7,
+                                     plotOutput(ns('FPIinput'), width='100%', height="100%")
+                              ),
+                              column(5,
+                                     h3('Inputs: Enabling Conditions'),
+                                     p("FPI input scores measure the level of enabling conditions which support fishery performance.
+                                       Higher scores reflect more of the enabling condition, though whether or how each input affects
+                                       fishery performance is an empirical question.  In some cases, these relationships can be complex,
+                                       and depend on the presence of several enabling conditions at once."),
+                                     p("One way to evaluate the fishery's enabling conditions is to compare them to benchmark scores for
+                                       select categories of fisheries, the average scores for those fisheries in the FPI database.
+                                       Select the desired benchmark from the drop down menu, and compare scores to identify dimensions
+                                       where the fishery has different levels of enabling conditions than typical fisheries of the same category."),
+                                     p('Another use of enabling condition data is to select the enabling conditions that will be altered in hopes
+                                       of improving the target performance dimension.  Data from FPI case studies with different levels of
+                                       that enabling condition, and other sources, can then be used to evaluate whether changes in that
+                                       enabling condition are associated with better performance.'),
+                                     p('Select the desired benchmark from the drop down menu or load another FPI database to
+                                     compare scores to identify dimensions where other fisheries have found ways to perform better.')
+                              )
+                     )
+                   )
+               ),
+               box(width=3,status='primary', solidHeader = TRUE,
+                   title='FPI Comparisons',
+                   shiny::selectInput(ns('baseline'), 'Baseline Comparison',
+                                      choices=BaseLineChoices,
+                                      multiple = TRUE),
+                   h5(strong('Another FPI data file')),
+                       column(8, fileInput(ns("Load2"),label=NULL)),
+                       column(4, actionButton(ns('remove'), 'Remove'))
+
+               )
+             )
+           )
+           }
+         })
+
+       output$FPIoutput_sector <- renderPlot({
+         if (!is.null(Info$file)) {
+           output_dim_scores(Info$Summary, input$baseline, BaseLine, FPI_2$Summary)
+         }
+       }, width=function() {
+         dims <- window_dims()
+         dims[1]*0.3
+       }, height=function() {
+         dims <- window_dims()
+         dims[1]*0.3
        })
 
-       # FPI Output Dimension Scores
-       output$FPIoutput <- renderPlot({
+       output$FPIoutput_tbl <- renderPlot({
          if (!is.null(Info$file)) {
-           baseline_select <- BaseLineSelectServer('baseline1')
-           output_dim_scores(Info$Summary, baseline_select, BaseLine)
+           output_scores_TBL(Info$Summary, input$baseline, BaseLine, FPI_2$Summary)
          }
-         }, height=600, width=600)
+       }, width=function() {
+         dims <- window_dims()
+         dims[1]*0.3
+       }, height=function() {
+         dims <- window_dims()
+         dims[1]*0.3
+       })
 
-       # FPI Input Dimension Scores
        output$FPIinput <- renderPlot({
          if (!is.null(Info$file)) {
-           baseline_select <- BaseLineSelectServer('baseline2')
-           input_dim_scores(Info$Summary, baseline_select, BaseLine)
+           input_dim_scores(Info$Summary, input$baseline, BaseLine, FPI_2$Summary)
          }
-       }, height=600, width=600)
-
-
-       # FPI Output by TBL
-       output$FPIoutputTBL <- renderPlot({
-         if (!is.null(Info$file)) {
-           baseline_select <- BaseLineSelectServer('baseline3')
-           output_scores_TBL(Info$Summary, baseline_select, BaseLine)
-         }
-       }, height=600, width=600)
-
-       # other plots
-       output$plot1 <- renderPlot({
-         if (!is.null(Info$file)) {
-           output_dim_scores(Info$Summary)
-         }
+       }, width=function() {
+         dims <- window_dims()
+         dims[1]*0.3
+       }, height=function() {
+         dims <- window_dims()
+         dims[1]*0.3
        })
 
-       output$plot3 <- renderPlot({
-         if (!is.null(Info$file)) {
-           output_scores_TBL(Info$Summary)
+       observeEvent(input$Load2, {
+         FPI_2$file <- iinpnput$Load2
+         FPI_2$sheets <- readxl::excel_sheets(FPI_2$file$datapath)
+         if (!'4. Summary' %in% FPI_2$sheets) {
+           FPI_2$Summary <- NULL
+         } else {
+           FPI_2$Summary <- readxl::read_excel(FPI_2$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
+           FPI_2$Output_table <- readxl::read_excel(FPI_2$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
+           FPI_2$Data <- XL2Data(name=FPI_2$file$datapath, sheet='12. Fishery Data')
+           FPI_2$openMSE.Qs <- readxl::read_excel(FPI_2$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
+           FPI_2$FPI.Inputs <- readxl::read_excel(FPI_2$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
+           FPI_2$FPI.Cover <- readxl::read_excel(FPI_2$file$datapath, sheet='3. Cover Page', .name_repair = 'minimal')
          }
        })
 
-       #  Output by TBL
-       output$plot4 <- renderPlot({
-         if (!is.null(Info$file)) {
-           FSHEP(Info$Output_table)
-         }
-       })
-       output$plot5 <- renderPlot({
-         if (!is.null(Info$file)) {
-           harvest(Info$Output_table)
-         }
-       })
-       output$plot6 <- renderPlot({
-         if (!is.null(Info$file)) {
-           harvest_assets(Info$Output_table)
-         }
-       })
-       output$plot7 <- renderPlot({
-         if (!is.null(Info$file)) {
-           risk(Info$Output_table)
-         }
-       })
-       output$plot8 <- renderPlot({
-         if (!is.null(Info$file)) {
-           managerial_returns(Info$Output_table)
-         }
-       })
-       output$plot9 <- renderPlot({
-         if (!is.null(Info$file)) {
-           trade(Info$Output_table)
-         }
-       })
-       output$plot10 <- renderPlot({
-         if (!is.null(Info$file)) {
-           product_form(Info$Output_table)
-         }
-       })
-       output$plot11 <- renderPlot({
-         if (!is.null(Info$file)) {
-           post_harvest_perf(Info$Output_table)
-         }
-       })
-       output$plot12 <- renderPlot({
-         if (!is.null(Info$file)) {
-           labor_returns(Info$Output_table)
-         }
-       })
-       output$plot13 <- renderPlot({
-         if (!is.null(Info$file)) {
-           health_sanit(Info$Output_table)
-         }
+       observeEvent(input$remove, {
+         FPI_2$Summary <- NULL
        })
 
      }
   )
 }
+
+
+

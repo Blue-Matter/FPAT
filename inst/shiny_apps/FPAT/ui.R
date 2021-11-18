@@ -1,26 +1,14 @@
 
-fluidPage(
+fluidPage(style="position: absolute;  padding-left: 40px; padding-right: 40px;",
   useShinyalert(),
+  useShinydashboard(),
   includeScript(path = "www/js/js4checkbox.js"),
   includeScript(path = "www/js/index.js"),
 
   tags$head(
     tags$link(rel='stylesheet', type='text/css', href='styles.css'),
     tags$link(href="fa/css/all.css", rel="stylesheet"), # font-awesome
-    tags$style(HTML("
-                    #SessionID{font-size:12px;}
-                         ")),
-    tags$style("
-                   .btn-dropdownbutton{background-color: #182b4c !important; color: #ffffff}
-               "),
-    tags$style(HTML("
-        /* https://fonts.google.com/?preview.text=SLICK&preview.text_type=custom */
-
-        @import url('//fonts.googleapis.com/css?family=Cairo|Cabin:400,700');
-
-        /* Font of FPAT title */
-
-      ")),
+    tags$style(HTML("#SessionID{font-size:12px;}")),
     tags$script('
         var dimension = [0, 0];
         $(document).on("shiny:connected", function(e) {
@@ -34,186 +22,69 @@ fluidPage(
             Shiny.onInputChange("dimension", dimension);
         });
     ')
-
   ),
 
-  # === HEADER ==============================================================================================================================================================
-  column(12,
-         column(1,h1("FPAT"),style="height:65px"),
-         column(5,h3("fisheries performance assessment toolkit"),style="height:65px;padding-top:8px"),
-         column(6,style="padding-top:25px",
+  # === HEADER =================================================================
+  Header_UI('header'),
 
-                div(style="display: inline-block;vertical-align:top;float:right;",
-                    dropdownButton(inputId="FPAT_File",
-                      column(12,
-                             h5(tags$b("Glossary",style="color:#347ab6")),
-                             column(12,
-
-                                    tabsetPanel(
-
-                                      tabPanel(h5("FPI ",style = "color:black"), HTML("<br>"), DT::dataTableOutput('CMPhelp'),value=1),
-                                      tabPanel(h5("openMSE",style = "color:black"), HTML("<br>"), DT::dataTableOutput('PMhelp'),value=2),
-                                      tabPanel(h5("FPAT",style = "color:black"), HTML("<br>"), value=3)
-
-                                    )# end of dropdownbutton CMP
-
-                             ),
-                             column(12,HTML("<br>")),
-
-                             h5(tags$b("Contact",style="color:#347ab6")),
-                             column(12,
-                                    h5("For technical questions or bug reports please contact ", a("tom@bluematterscience.com", href="mailto:tom@bluematterscience.com", target="_blank"),style = "color:grey")
-                             ),
-                             h5(tags$b("Software",style="color:#347ab6")),
-                             column(12,
-                                    h5("FPAT v0.1.0",style = "color:grey")
-                             ),
-                             h5(tags$b("Acknowledgements",style="color:#347ab6")),
-                             column(12,
-                                    h5("FAO, UW, openMSE sponsors")
-
-                             )
-
-                   ),
-
-                      label = "Help",
-                      icon = icon("info"),
-                      status = "dropdownbutton",
-                      right=TRUE,
-                      circle = FALSE,
-                      width="800px"
-
-                    )
-                ), # end of help menu dropdown
-
-
-                # Reports menu dropdown
-                div(style="display: inline-block;vertical-align:top; float:right;",
-
-                    dropdownButton(
-
-                      column(12,
-                             column(9,h5("Operating model",style="font-weight:bold;color:#347ab6")),
-                             column(3,downloadButton("OM_Rep"," ")),
-                             column(9,h5("Conditioning",style="font-weight:bold;color:#347ab6")),
-                             column(3,downloadButton("Cond_Rep"," ")),
-                             column(9,h5("FPAT results",style="font-weight:bold;color:#347ab6")),
-                             column(3,downloadButton("FPAT_Rep"," "))
-
-                      ),
-                      inputId = "Reports",
-                      label = "Reports",
-                      icon = icon("newspaper"),
-                      status = "dropdownbutton",
-                      circle = FALSE,
-                      right=TRUE,
-                      width="300px"
-                    )
-
-                ), # end of reports menu dropdown
-
-                # Settings menu dropdown
-                div(style="display: inline-block;vertical-align:top; float:right;",
-
-                    dropdownButton(
-
-                      column(12,
-                          h5(tags$b("Settings for controlling OM conditioning etc",style="color:#347ab6")),
-                      ),
-                      inputId = "DD_Settings",
-                      label = "Settings",
-                      icon = icon("cogs"),
-                      status = "dropdownbutton",
-                      circle = FALSE,
-                      right=TRUE,
-                      width="400px"
-                    )
-
-                ), # end of settings menu dropdown
-
-                # File menu dropdown
-                div(style="display: inline-block;vertical-align:top; float:right;",
-
-                    dropdownButton(
-
-                      column(12,tags$hr(style="margin-top: 3px; margin-bottom: 3px"),
-                        h5(tags$b("FPAT Session",style="color:#347ab6")),
-                        column(6,h5("Load (.fpat)",style = "color:grey"), tipify(fileInput("Load_session",label=NULL,accept=c("fpat",".fpat")),title="Load a previous session including calculated results (large)")),
-                        column(1),
-                        column(5,h5("Save (.fpat)",style = "color:grey"),    downloadButton("Save_session","",width="100px"))
-                      ),
-
-
-                      inputId = "DD_file",
-                      label = "File",
-                      icon = icon("file"),
-                      status = "dropdownbutton",
-                      circle = FALSE,
-                      right=TRUE,
-                      width="400px"
-                    )
-
-                ) # end of file menu dropdown
-
-
-         )  # end of tool bar
-
-  ),
-
-  # === MAIN WINDOW =========================================================================================================================================================
-
+  # === MAIN WINDOW ============================================================
   column(12, # General tab panel
-    verticalTabsetPanel(id = "NonTech",selected=1,
+         div(class='left_menu',
+             verticalTabsetPanel(id = "NonTech",selected=1,
 
-      verticalTabPanel(value=1,
-                       h5("Home"),
-                       height="400px",
-                       Home_UI('Home1'),
-                       box_height='55px'),
+                                 verticalTabPanel(value=1,
+                                                  h5(strong("Home")),
+                                                  height="400px",
+                                                  Home_UI('Home1'),
+                                                  box_height='55px'),
 
-      verticalTabPanel(value=2,
-                       h5(strong("1. Load")),
-                       Load_UI('Load1'),
-                       box_height='55px'),
+                                 verticalTabPanel(value=2,
+                                                  h5(strong("1. Load")),
+                                                  Load_UI('Load1'),
+                                                  box_height='55px'),
 
-      verticalTabPanel(value=3,
-                       h5(strong("2. FPI Scores")),
-                       FPI_UI('FPI1'),
-                       box_height='55px'),
+                                 verticalTabPanel(value=3,
+                                                  h5(strong("2. FPI Scores")),
+                                                  FPI_UI('FPI1'),
+                                                  box_height='55px'),
 
-      verticalTabPanel(value=4,
-                       h5(strong("3. Fishery Dynamics")),
-                       HistDynamics_UI('dynamics'),
-                       box_height='55px'),
+                                 verticalTabPanel(value=4,
+                                                  h5(strong("3. Fishery Dynamics")),
+                                                  HistDynamics_UI('dynamics'),
+                                                  box_height='55px'),
 
-      verticalTabPanel(value=5,
-                       h5(strong("4. Projections")),
-                       Results_UI('Results1'),
-                       box_height='55px'),
-
-      #verticalTabPanel(value=6,
-      #                 h5("4. FPI Plots"),
-      #                 FPI_UI('FPI1'),
-      #                 box_height='55px'),
-
-    contentWidth=11
-
-    ) # end of tabsetpanel
+                                 verticalTabPanel(value=5,
+                                                  h5(strong("4. Projections")),
+                                                  Results_UI('Results1'),
+                                                  box_height='55px'),
+                                 contentWidth=11) # end of tabsetpanel
+             )
 
   ), # end of main window for general
 
-  column(12, br()),
-  column(12, verbatimTextOutput("Log",placeholder=T)),
-  bsTooltip("Log","Application Log"),
+
+  # === LOG ====================================================================
+
   column(12,
-         column(3,downloadButton("Download_Log","Download Log",style="height:28px"))
+         br(),
+         verbatimTextOutput("Log",placeholder=T),
+         bsTooltip("Log","Application Log"),
+         downloadButton("Download_Log","Download Log",style="height:28px"),
+         hr()
   ),
-  column(12),
-  hr(),
 
-  column(12,  br(),br(), style="height:40px;  text-align: center;",textOutput("SessionID")),
 
-  column(12,  br(),style="height:40px; text-align: center", h6("copyright (c) Blue Matter Science Ltd, 2021"))
-
+  # === SESSION INFO & COPYRIGHT ===============================================
+  column(12, style="height:40px;  text-align: center;",
+         br(),
+         textOutput("SessionID"),
+         h6(
+           "Copyright", HTML("&#169;"),
+           a(paste("Blue Matter Science Ltd,", format(Sys.Date(), "%Y")),
+             href="https://www.bluematterscience.com/", target="_blank")
+         ),
+         br()
+  )
 
 ) # end of fluid page
+

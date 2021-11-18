@@ -1,5 +1,72 @@
-# Historical fishery plots
+# Historical fishery dynamics plots
 
+
+hist_spawnbio <- function(Info) {
+  if (class(Info$MSEhist) == 'Hist') {
+    MSEhist <- Info$MSEhist
+    SB <- apply(MSEhist@TSdata$SBiomass,1:2,sum)
+    nsim <- dim(SB)[1]
+    nyears <- dim(SB)[2]
+    SB <- SB/MSEhist@Ref$ByYear$SSB0[, 1:nyears]
+
+    yrs<-Current_Year-(nyears:1)
+
+    df <- data.frame(Year=rep(yrs, each=nsim), Sim=1:nsim, SB=as.vector(SB))
+
+    ggplot(df, aes(x=Year, y=SB)) +
+      geom_smooth(stat = 'summary', alpha = 0.2, fill = 'blue', color = 'blue',
+                  fun.data = median_hilow, fun.args = list(conf.int = 0.5)) +
+      expand_limits(y=c(0,1)) +
+      labs(x="Year", y='Relative Spawning Biomass') +
+      theme_bw() +
+      theme(axis.text=element_text(size=12),
+            axis.title=element_text(size=16))
+  }
+}
+
+hist_catch <- function(Info) {
+  if (class(Info$MSEhist) == 'Hist') {
+    MSEhist <- Info$MSEhist
+    Catch <- apply(MSEhist@TSdata$Removals,1:2,sum)
+    nsim <- dim(Catch)[1]
+    nyears <- dim(Catch)[2]
+    yrs<-Current_Year-(nyears:1)
+    Catch <- Catch/Catch[,nyears]
+
+    df <- data.frame(Year=rep(yrs, each=nsim), Sim=1:nsim, Catch=as.vector(Catch))
+
+    ggplot(df, aes(x=Year, y=Catch)) +
+      geom_smooth(stat = 'summary', alpha = 0.2, fill = 'blue', color = 'blue',
+                  fun.data = median_hilow, fun.args = list(conf.int = 0.5)) +
+      expand_limits(y=c(0,1)) +
+      labs(x="Year", y='Relative Historical Catch') +
+      theme_bw() +
+      theme(axis.text=element_text(size=12),
+            axis.title=element_text(size=16))
+  }
+}
+
+hist_recruitment <- function(Info) {
+  if (class(Info$MSEhist) == 'Hist') {
+    MSEhist <- Info$MSEhist
+    Rec <- apply(MSEhist@AtAge$Number[,1,,],1:2,sum)
+    nsim <- dim(Rec)[1]
+    nyears <- dim(Rec)[2]
+    yrs<-Current_Year-(nyears:1)
+    Rec <- Rec/MSEhist@SampPars$Stock$R0
+
+    df <- data.frame(Year=rep(yrs, each=nsim), Sim=1:nsim, Rec=as.vector(Rec))
+
+    ggplot(df, aes(x=Year, y=Rec)) +
+      geom_smooth(stat = 'summary', alpha = 0.2, fill = 'blue', color = 'blue',
+                  fun.data = median_hilow, fun.args = list(conf.int = 0.5)) +
+      expand_limits(y=c(0,1)) +
+      labs(x="Year", y='Relative Historical Recruitment') +
+      theme_bw() +
+      theme(axis.text=element_text(size=12),
+            axis.title=element_text(size=16))
+  }
+}
 
 
 plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue", col50='light blue', col90='#60859925'), addline=T, ablines=NA){

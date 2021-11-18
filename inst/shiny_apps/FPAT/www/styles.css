@@ -1,27 +1,44 @@
 /* Default styles for pages */
 
+/* https://fonts.google.com/?preview.text=SLICK&preview.text_type=custom */
+/* font for title */
+@import url('//fonts.googleapis.com/css?family=Cairo|Cabin:400,700');
+
 
 .list-group-item{
   color: white
 }
 
 h3 {
-  background-color: #FFFFFF;
   font-family: 'Cairo',cursive;
-  color:black;
 }
 
 h2 {
-  background-color: #FFFFFF;
   font-family: 'Cairo',cursive;
-  color:black;
+
 }
 
 h1 {
-  background-color: #FFFFFF;
   font-family: 'Cairo',cursive;
-  color:black;
 }
+
+p {
+   font-size: 16px;
+}
+
+li {
+  font-size: 16px;
+}
+
+.left_menu h5{
+  text-align: left;
+  padding-left: 8px;
+}
+
+.box h3 {
+}
+
+
 
 /* logo when hovered */
 .skin-blue .main-header .logo:hover {
@@ -149,45 +166,6 @@ pre {
   bottom: .45em;
 
 }
-/*
-
-
- /*
-
-.non_tech_filters {
-  float: right;
-}
-*/
-
-
-
-/*
-.perftable {
-  border-style: dashed;
-  border-width: 1px;
-  border-color: olive;
-}
-
-.filled_hex {
-  border-left-style: solid;
-  border-left-color: #D6501C;
-  border-bottom-style: solid;
-  border-bottom-color: #D6501C;
-  border-width: 1px;
-  padding-left: 15px;
-}
-
-.spider_plot {
-  border-left-style: solid;
-  border-left-color: #D6501C;
-  border-right-style: solid;
-  border-right-color: #D6501C;
-  border-width: 1px;
-  padding-left: 15px;
-}
-
-*/
-
 
 
 .page_title #title {
@@ -269,6 +247,11 @@ pre {
     display: inline-block;
     vertical-align: baseline;
 
+
+.btn-dropdownbutton{
+  background-color: #182b4c !important;
+  color: #ffffff
+}
 
 
 

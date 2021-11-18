@@ -5,33 +5,12 @@ Results_UI <- function(id, label="Results") {
 
   ns <- NS(id)
   fluidPage(
-    column(12,
-       br(),
-       htmlOutput(ns("Intro")),
-       br(),
-       h4("About MSE results..."),
-       tabsetPanel(
-         tabPanel(h5("Kobe",style = "color:black"), HTML("<br>"),value=1,
-                  column(6,plotOutput(ns('Pplot'))),
-                  column(6,plotOutput(ns('Kplot')))
-
-         ),
-         tabPanel(h5("Trade-offs",style = "color:black"), HTML("<br>"),value=2,
-                  column(6,plotOutput(ns('Tradeplot')))
-         ),
-         tabPanel(h5("Socio-Economic Outcomes",style = "color:black"), HTML("<br>"),value=2,
-                  h5('Plots of FPI-related Performance Metrics')
-         ),
-         tabPanel(h5("Management Strategies",style = "color:black"), HTML("<br>"),value=3,
-                  #h5("Select Management Strategies for Evaluation"),
-                  checkboxGroupInput(ns("MPset"),label="Management Strategy Selections",
-                                     choiceNames=c("Status Quo Catch and Effort","Size limits","Length-based","Index-based"),
-                                     choiceValues=c("SQ","Size","LB","IB"),selected="SQ"),
-                  actionButton(ns("runMSE"),label="Re-run MSE Projections",icon=icon('cogs')),
-                  br()
-
-         )
-       )
+    fluidRow(
+      column(12,
+             h3('MSE Projection Results'),
+             htmlOutput(ns('checkloaded')),
+             htmlOutput(ns('MSE_results'))
+             )
     )
   )
 }
@@ -40,37 +19,290 @@ Results_Server <- function(id,Info) {
   moduleServer(id,
     function(input, output, session) {
 
-      output$Intro <- renderText({
-        "This panel contains the results of the openMSE projections - with links to FPI performance metrics"
+      output$checkloaded <- CheckLoaded(Info)
+
+      output$MSE_results <- renderUI({
+        if(!is.null(Info$MSEhist)) {
+          ns <- NS(id)
+          tagList(
+            fluidRow(
+              box(width=4, status='primary', solidHeader = TRUE,
+                  title='Management Strategy Selection',
+                  column(12,
+                         h4(strong('Status Quo Catch and Effort')),
+                         p('Fishing in the projection years is fixed at the current catch and current effort.'),
+                         h4(strong('Size limits')),
+                         p('Length-at-retention is set to size-of-maturity and 10% higher than size-of-maturity.'),
+                         h4(strong('Length-based')),
+                         p('Two management procedures that adjust the annual catch limit based on the trend in mean length in the catch.'),
+                         h4(strong('Index-based')),
+                         p('Two management procedures that adjust the annual catch limit based on the trend in the index of abundance.')
+                         ),
+                  column(12,
+                         checkboxGroupInput(ns("MPset"),label="Select Management Strategies",
+                                            choiceNames=c("Status Quo Catch and Effort","Size limits","Length-based","Index-based"),
+                                            choiceValues=c("SQ","Size","LB","IB"),selected=c("SQ")),
+                         p('Select the management procedures you wish to test and run the MSE projections.')
+                         ),
+                  column(12,
+                         actionButton(ns("runMSE"),label="Run MSE Projections",icon=icon('cogs')),
+                         htmlOutput(ns('DownloadMSE'))
+                         )
+              ),
+              box(width=8, status='primary', solidHeader = TRUE, height=1050,
+                  title='MSE Results',
+                  htmlOutput(ns('Projection_results'))
+
+              )
+            )
+          )
+
+        }
       })
 
-      output$Pplot <- renderPlot({     if (!is.null(Info$file))    Pplot2(Info$MSEproj,traj='quant',quants=c(0.05,0.95)) })
-      output$Kplot <- renderPlot({     if (!is.null(Info$file))    Kplot(Info$MSEproj) })
+      output$DownloadMSE<- renderUI({
+        if(!is.null(Info$MSEproj)) {
+          ns <- NS(id)
+          tagList(
+            h5(strong('Download MSE Object')),
+            p('For more detailed analysis, the MSE object can be downloaded',
+              'and used in the',
+              a(href='https://openmse.com/', 'openMSE', target="_blank"),
+              'framework.'),
+            downloadButton(ns('downloadMSE'), 'Download MSE')
+          )
+        }
+      })
 
-      output$Tradeplot <- renderPlot({     if (!is.null(Info$file))    TradePlot(Info$MSEproj) })
+      output$Projection_results <- renderUI({
+        if(is.null(Info$MSEproj)) {
+          return(h4('Projections have not been run yet.', style = "color:red"))
+        } else {
+          ns <- NS(id)
+          tagList(
+            tabsetPanel(
+              tabPanel(h5('Projection Plots', style='color:black;'),
+                       value=1,
+                       br(),
+                       column(8,
+                              plotOutput(ns('Projection_plot'))
+                       ),
+                       column(4,
+                              h3('Projection Plot'),
+                              selectInput(ns('Proj_Var'),
+                                          label = 'Projection Variable',
+                                          choices = c('Spawning Biomass', 'Catch')),
+                              htmlOutput(ns('Proj_opts'))
+                       )
+              ),
+              tabPanel(h5('Trade-Off Plots', style='color:black;'),
+                       value=2,
+                       br(),
+                       column(8,
+                              plotOutput(ns('TradeOff_plot'))
+                       ),
+                       column(4,
+                              h3('Trade-Off Plot'),
+                              h3('X-Axis'),
+                              htmlOutput(ns('Xax')),
+                              htmlOutput(ns('Xopt')),
+
+                              h3('Y-Axis'),
+                              htmlOutput(ns('Yax')),
+                              htmlOutput(ns('Yopt'))
+
+                       )
+              )
+            )
+          )
+        }
+      })
 
       observeEvent(input$MPset,{
-
         MPs<-list(
           SQ=c("CurC","curEref"),
           Size=c("matlenlim","matlenlim2"),
           LB=c("Ltarget1","Ltarget2"),
           IB=c("Itarget1","Itarget2")
         )
-
-        #input<-list(MPset=names(MPs)[2:3]) # debug
         MPsel<-NULL
         for(i in 1:length(MPs))if(names(MPs)[i] %in% input$MPset) MPsel <- c(MPsel,MPs[[i]])
         Info$MPsel<-MPsel
         AM(paste(c("Management strategies selected:", Info$MPsel),collapse= " "))
-
       })
 
       observeEvent(input$runMSE,{
         runProj(Info)
       })
 
+
+      output$Projection_plot <- renderPlot({
+        if (input$Proj_Var == 'Spawning Biomass') opt <- input$SBopts
+        if (input$Proj_Var == 'Catch') opt <- input$Copts
+          Projection_plot(Info$MSEproj, input$Proj_Var, opt)
+      },
+      width=function() {
+        dims <- window_dims()
+        dims[1]*0.3
+      },
+      height=function() {
+        dims <- window_dims()
+        dims[1]*0.3
+      })
+
+      output$Proj_opts <- renderUI({
+        ns <- NS(id)
+
+        if (input$Proj_Var == 'Spawning Biomass') {
+          out <- tagList(
+            radioButtons(ns('SBopts'), 'Relative to:',
+                         choices=c('SB0', 'SBMSY'))
+          )
+        }
+        if (input$Proj_Var == 'Catch') {
+          out <- tagList(
+            checkboxInput(ns('Copts'), 'Include removals?',
+                         value=FALSE)
+          )
+        }
+        return(out)
+      })
+
+      output$TradeOff_plot <- renderPlot({
+        Xaxis <- list()
+        Xaxis$Year <- input$x_year
+        Xaxis$Var <- input$x_var
+        Xaxis$Reference <- input$x_reference
+        Xaxis$Metric <- input$x_metric
+        IncEx <- input$x_err
+        if (length(Xaxis$Reference)<1) Xaxis$Reference <- 0
+        if(length(IncEx)<1) IncEx <- FALSE
+
+        Yaxis <- list()
+        Yaxis$Year <- input$y_year
+        Yaxis$Var <- input$y_var
+        Yaxis$Reference <- input$y_reference
+        Yaxis$Metric <- input$y_metric
+        IncEy <- input$y_err
+        if (length(Yaxis$Reference)<1) Yaxis$Reference <- 0
+        if(length(IncEy)<1) IncEy <- FALSE
+
+        TradeOff_plot(Info$MSEproj, Xaxis, Yaxis, IncEx, IncEy)
+      },
+      width=function() {
+        dims <- window_dims()
+        dims[1]*0.3
+      },
+      height=function() {
+        dims <- window_dims()
+        dims[1]*0.3
+      })
+
+
+      output$Xax <- renderUI({
+        ns <- NS(id)
+        if (class(Info$MSEproj) == 'MSE') {
+          Yr1 <- Current_Year
+          Yr2 <- Current_Year + Info$MSEproj@proyears
+
+          tagList(
+            selectInput(ns('x_var'),
+                        label = 'Variable',
+                        choices = c('SB/SB0', 'SB/SBMSY', 'Catch')),
+            sliderInput(ns('x_year'),
+                        label = h4("Years"),
+                        min = Yr1,
+                        max = Yr2,
+                        value = c(Yr1, Yr2),
+                        step=1),
+            selectInput(ns('x_metric'),
+                        label = 'Metric',
+                        choices = c('Median', 'Probability'))
+          )
+        }
+      })
+      output$Xopt <- renderUI({
+        ns <- NS(id)
+        if (class(Info$MSEproj) == 'MSE') {
+          if (length(input$x_metric)>0) {
+            if (input$x_metric == 'Median') {
+              return(tagList(
+                checkboxInput(ns('x_err'), 'Include error bars?',
+                              value=FALSE)
+              ))
+            }
+            if(input$x_metric == 'Probability') {
+              return(tagList(
+                numericInput(ns('x_reference'), 'Reference Value',
+                             min=0,
+                             value=0.5,
+                             step=0.1)
+              ))
+            }
+          }
+        }
+      })
+
+      output$Yax <- renderUI({
+        ns <- NS(id)
+        if (class(Info$MSEproj) == 'MSE') {
+          Yr1 <- Current_Year + 1
+          Yr2 <- Current_Year + Info$MSEproj@proyears
+
+          tagList(
+            selectInput(ns('y_var'),
+                        label = 'Variable',
+                        choices = c('SB/SB0', 'SB/SBMSY', 'Catch'),
+                        selected='Catch'),
+            sliderInput(ns('y_year'),
+                        label = h4("Years"),
+                        min = Yr1,
+                        max = Yr2,
+                        value = c(Yr1, Yr2),
+                        step=1),
+            selectInput(ns('y_metric'),
+                        label = 'Metric',
+                        choices = c('Median', 'Probability'))
+          )
+        }
+      })
+
+      output$Yopt <- renderUI({
+        ns <- NS(id)
+        if (class(Info$MSEproj) == 'MSE') {
+          if (length(input$y_metric)>0) {
+            if (input$y_metric == 'Median') {
+              return(tagList(
+                checkboxInput(ns('y_err'), 'Include error bars?',
+                              value=FALSE)
+              ))
+            }
+            if(input$y_metric == 'Probability') {
+              return(tagList(
+                numericInput(ns('y_reference'), 'Reference Value',
+                             min=0,
+                             value=0.5,
+                             step=0.1)
+              ))
+            }
+          }
+        }
+      })
+
+
+      output$downloadMSE <- downloadHandler(
+        filename = function() {
+          paste("MSE", Sys.Date(), ".rda", sep="")
+        },
+        content = function(file) {
+          if(class(Info$MSEproj)=='MSE') {
+            saveRDS(Info$MSEproj, file)
+          }
+
+        }
+
+      )
+
     }
   )
 }
-

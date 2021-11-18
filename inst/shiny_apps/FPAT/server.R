@@ -35,11 +35,27 @@ server <- function(input, output, session) {
     MPsel = c("CurC","curEref")        # Selected MPs for running the MSE
   )
 
-  # splash page
+  # FPI comparision
+  FPI_2 <- reactiveValues(
+    file=NULL,          # input file
+    sheets=NULL,        # Sheet names
+    Summary=NULL,       # FPI summary tab
+    Output_table=NULL,  # FPI output-table
+    Input_table=NULL,   # FPI input-table
+    Data = NULL,        # Data
+    MERA.Qs = NULL,     # M
+    FPI.Inputs = NULL,  # FPI inputs table
+    FPI.Cover = NULL   # FPI cover sheet
+  )
+
+  # dynamic plot dimensions
+  window_dims <<- reactive(input$dimension)
+
+  # Server calls
   Home_Server('Home1')
   Load_Server('Load1', Info=Info, Toggles=Toggles)
-  FPI_Server('FPI1',Info=Info)
-  HistDynamics_Server('dynamics', Info=Info)
+  FPI_Server('FPI1',Info=Info, FPI_2=FPI_2)
+  HistDynamics_Server('dynamics', Info=Info, Toggles=Toggles)
   Results_Server('Results1',Info=Info)
 
 
