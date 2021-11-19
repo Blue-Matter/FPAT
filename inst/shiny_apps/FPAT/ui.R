@@ -30,7 +30,7 @@ fluidPage(style="position: absolute;  padding-left: 40px; padding-right: 40px;",
   # === MAIN WINDOW ============================================================
   column(12, # General tab panel
          div(class='left_menu',
-             verticalTabsetPanel(id = "NonTech",selected=1,
+             verticalTabsetPanel(id = "NonTech",selected=1, color='#4291be',
 
                                  verticalTabPanel(value=1,
                                                   h5(strong("Home")),
