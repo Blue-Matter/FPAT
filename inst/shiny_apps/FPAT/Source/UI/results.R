@@ -79,7 +79,7 @@ Results_Server <- function(id,Info) {
                      text <- paste0(mps, collapse = ', ')
                      tagList(
                        h5(strong('Selected MPs:')),
-                       renderText(text)
+                       p(text)
                      )
                    }
 
