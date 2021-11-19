@@ -74,7 +74,7 @@ HistDynamics_Server <- function(id, Info, Toggles) {
                    p('An Operating Model Report with plots of all simulated fishery dynamics and
                                        parameters can be downloaded by clicking the button below.'),
                    radioButtons(ns('filetype'), 'Report File Type',
-                                choices = list("HTML" = 1, "PDF" = 2), inline=TRUE),
+                                choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
                    downloadButton(ns('downloadOMRep'), 'Download OM Report'),
                                  br(),
                    h4('Download OM '),
@@ -132,7 +132,7 @@ HistDynamics_Server <- function(id, Info, Toggles) {
 
        output$downloadOMRep <- downloadHandler(
          filename = function() {
-           if (input$filetype == 1) {
+           if (input$filetype == 'html') {
              paste("OM_Report", Sys.Date(), ".html", sep="")
            } else {
              paste("OM_Report", Sys.Date(), ".pdf", sep="")
@@ -141,12 +141,11 @@ HistDynamics_Server <- function(id, Info, Toggles) {
          },
          content = function(file) {
            if(class(Info$MSEhist)=='Hist') {
-             dir <- tempdir()
-             if (input$filetype == TRUE) {
+             if (input$filetype == 'html') {
                output_format <- 'html_document'
              } else {
                output_format <- 'pdf_document'
-            }
+             }
              GenOMreport(Info$MSEhist, file, output_format)
            }
 
@@ -211,7 +210,7 @@ GenOMreport <- function(MSEhist, file, output_format, nsamp=3) {
                Obs=MSEhist@SampPars$Obs,
                Imp=MSEhist@SampPars$Imp)
   Pars$Hist <- MSEhist
-  Pars$CurrentYr <-  Current_Year
+  Pars$CurrentYr <- Current_Year
   Pars$Name <- 'Operating Model'
   Pars$MPA <- MSEhist@OM@MPA
 

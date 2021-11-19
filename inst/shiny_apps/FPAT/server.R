@@ -74,5 +74,17 @@ server <- function(input, output, session) {
     }
   )
 
+  output$package_versions <- renderUI({
+    tagList(
+      h6(
+        paste("openMSE", packageVersion("openMSE"),
+        "MSEtool", packageVersion("MSEtool"),
+        "DLMtool", packageVersion("DLMtool"),
+        "SAMtool", packageVersion("SAMtool"))
+
+      )
+    )
+  })
+
 
 }

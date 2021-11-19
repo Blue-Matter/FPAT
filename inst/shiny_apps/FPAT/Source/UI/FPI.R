@@ -149,7 +149,7 @@ FPI_Server <- function(id, Info, FPI_2) {
        })
 
        observeEvent(input$Load2, {
-         FPI_2$file <- iinpnput$Load2
+         FPI_2$file <- input$Load2
          FPI_2$sheets <- readxl::excel_sheets(FPI_2$file$datapath)
          if (!'4. Summary' %in% FPI_2$sheets) {
            FPI_2$Summary <- NULL
