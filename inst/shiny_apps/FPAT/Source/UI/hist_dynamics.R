@@ -146,11 +146,12 @@ HistDynamics_Server <- function(id, Info, Toggles) {
              } else {
                output_format <- 'pdf_document'
              }
+             AM("------------- Generating OM Report --------------")
+             AM(paste0("File type: ", input$filetype))
+             AM(paste0("output_format: ", output_format))
              GenOMreport(Info$MSEhist, file, output_format)
            }
-
          }
-
        )
 
        output$downloadOM <- downloadHandler(
@@ -163,9 +164,7 @@ HistDynamics_Server <- function(id, Info, Toggles) {
            }
 
          }
-
        )
-
 
        observeEvent(input$LoadOM, {
          OM <- readRDS(input$LoadOM$datapath)
