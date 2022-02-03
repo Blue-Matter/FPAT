@@ -69,6 +69,11 @@ HistDynamics_Server <- function(id, Info, Toggles) {
                    )
                ),
                box(width=3,status='primary', solidHeader = TRUE,
+                   title='Fishery Simulation Metadata',
+                   tableOutput(ns('FisheryMetadata'))
+               ),
+
+               box(width=3,status='primary', solidHeader = TRUE,
                    title='Download and Upload',
                    h4('Download Full OM Report'),
                    p('An Operating Model Report with plots of all simulated fishery dynamics and
@@ -93,6 +98,12 @@ HistDynamics_Server <- function(id, Info, Toggles) {
            )
          }
        })
+
+       output$FisheryMetadata <- renderTable({
+         if (!is.null(Info$Data)) {
+           makefisherymetadata(Info)
+         }
+       }, colnames = FALSE, sanitize.text.function=function(x){x})
 
        output$hist_SB <- renderPlot({
          hist_spawnbio(Info)
@@ -235,3 +246,25 @@ GenOMreport <- function(MSEhist, file, output_format, nsamp=3) {
                       quiet=TRUE, output_format=output_format)
   })
 }
+
+makefisherymetadata <- function(Info) {
+  asslist <<- Info$OM@Misc$asslist
+
+  if (class(Info$MSEhist) == 'Hist') {
+    MSEhist <- Info$MSEhist
+    SB <- apply(MSEhist@TSdata$SBiomass,1:2,sum)
+    nsim <- dim(SB)[1]
+    nyears <- dim(SB)[2]
+    lhyear <- max(c(data@LHYear, data@Year), na.rm=TRUE)
+    yrs <- (lhyear-nyears+1):lhyear
+    yrs <- paste0(yrs[1], "-", yrs[length(yrs)])
+
+    data <- Info$Data
+    return(  c(paste0('<strong>Name: </strong>',data@Name),
+               paste0('<strong>Species: </strong>', '<i>', data@Species, '</i>'),
+               paste0('<strong>Common Name: </strong>', data@Common_Name),
+               paste0('<strong>Region: </strong>', data@Region),
+               paste0('<strong>Historical Years: </strong>', yrs)))
+  }
+}
+

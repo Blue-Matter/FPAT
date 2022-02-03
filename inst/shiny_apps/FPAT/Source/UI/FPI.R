@@ -37,18 +37,8 @@ FPI_Server <- function(id, Info, FPI_2) {
                               ),
                               column(5,
                                      h3('Outputs: Sector'),
-                                     p("FPI output scores measure the fishery's performance based on where wealth
-                                     is accumulating in the fishery.  Higher scores are better, reflecting that
-                                     more wealth is being generated in the stock resource, among fishermen and
-                                     the harvest sector, or in the processing sector."),
-                                     p('This graph is used to identify the dimensions where the fishery is performing well,
-                                     and to target dimensions for improvement.  Different fisheries may have different,
-                                     locally identified performance priorities.'),
-                                     p('As a general rule, scoring levels have been chosen so that scores below 3 reflect
-                                     the need for improvement.  The fishery may also be compared to benchmark scores for
-                                     select categories of fisheries, average scores for those fisheries in the FPI database.'),
-                                     p('Select the desired benchmark from the drop down menu or load another FPI database to
-                                     compare scores to identify dimensions where other fisheries have found ways to perform better.')
+                                     htmlOutput(ns('FPI_output_sector_text')),
+                                     p('Select the desired benchmark from the drop down menu or load another FPI database to compare scores to identify dimensions where other fisheries have found ways to perform better.')
                               )
                      ),
                      tabPanel(h5('Outputs: Triple Bottom Line', style='color:black;'),
@@ -59,14 +49,7 @@ FPI_Server <- function(id, Info, FPI_2) {
                               ),
                               column(5,
                                      h3('Outputs: Triple Bottom Line'),
-                                     p("FPI output scores measure the fishery's performance on the pillars
-                                       of the triple bottom line.  Higher scores are better, reflecting that
-                                       the fishery is attaining more success on ecological, economic or community pillars."),
-                                     p('This graph is used to identify the dimensions where the fishery is performing well, and to target dimensions for improvement.
-                                       Different fisheries may have different, locally identified performance priorities.  '),
-                                     p('As a general rule, scoring levels have been chosen so that scores below 3 reflect
-                                     the need for improvement.  The fishery may also be compared to benchmark scores for
-                                     select categories of fisheries, average scores for those fisheries in the FPI database.'),
+                                     htmlOutput(ns('FPI_output_tpl_text')),
                                      p('Select the desired benchmark from the drop down menu or load another FPI database to
                                      compare scores to identify dimensions where other fisheries have found ways to perform better.')
                               )
@@ -79,23 +62,15 @@ FPI_Server <- function(id, Info, FPI_2) {
                               ),
                               column(5,
                                      h3('Inputs: Enabling Conditions'),
-                                     p("FPI input scores measure the level of enabling conditions which support fishery performance.
-                                       Higher scores reflect more of the enabling condition, though whether or how each input affects
-                                       fishery performance is an empirical question.  In some cases, these relationships can be complex,
-                                       and depend on the presence of several enabling conditions at once."),
-                                     p("One way to evaluate the fishery's enabling conditions is to compare them to benchmark scores for
-                                       select categories of fisheries, the average scores for those fisheries in the FPI database.
-                                       Select the desired benchmark from the drop down menu, and compare scores to identify dimensions
-                                       where the fishery has different levels of enabling conditions than typical fisheries of the same category."),
-                                     p('Another use of enabling condition data is to select the enabling conditions that will be altered in hopes
-                                       of improving the target performance dimension.  Data from FPI case studies with different levels of
-                                       that enabling condition, and other sources, can then be used to evaluate whether changes in that
-                                       enabling condition are associated with better performance.'),
-                                     p('Select the desired benchmark from the drop down menu or load another FPI database to
-                                     compare scores to identify dimensions where other fisheries have found ways to perform better.')
+                                     htmlOutput(ns('FPI_input_enabling')),
+                                     p('Select the desired benchmark from the drop down menu, and compare scores to identify dimensions where the fishery has different levels of enabling conditions than typical fisheries of the same category.')
                               )
                      )
                    )
+               ),
+               box(width=3,status='primary', solidHeader = TRUE,
+                   title='FPI Metadata',
+                   tableOutput(ns('FPImetadata'))
                ),
                box(width=3,status='primary', solidHeader = TRUE,
                    title='FPI Comparisons',
@@ -106,11 +81,45 @@ FPI_Server <- function(id, Info, FPI_2) {
                        column(8, fileInput(ns("Load2"),label=NULL)),
                        column(4, actionButton(ns('remove'), 'Remove'))
 
+               ),
+               box(width=3,status='primary', solidHeader = TRUE,
+                   title='Download FPI Report',
+                   p('The FPI plots can be downloaded in a FPI Report by clicking the button below.'),
+                   radioButtons(ns('filetype'), 'Report File Type',
+                                choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
+                   downloadButton(ns('downloadFPIRep'), 'Download FPI Report')
+
+
                )
              )
            )
            }
          })
+
+       output$FPI_output_sector_text <- renderUI({
+         rawText <- readLines('Data/FPI_output_sector.txt')
+         splitText <- stringi::stri_split(str = rawText, regex = '\\n')
+         lapply(splitText, p)
+       })
+
+       output$FPI_output_tpl_text <- renderUI({
+         rawText <- readLines('Data/FPI_output_tpl.txt')
+         splitText <- stringi::stri_split(str = rawText, regex = '\\n')
+         lapply(splitText, p)
+       })
+
+       output$FPI_input_enabling <- renderUI({
+         rawText <- readLines('Data/FPI_input_enabling.txt')
+         splitText <- stringi::stri_split(str = rawText, regex = '\\n')
+         lapply(splitText, p)
+       })
+
+       output$FPImetadata <- renderTable({
+         if (!is.null(Info$FPI.Cover)) {
+           metadata <- Info$FPI.Cover
+           makemetadata(metadata)
+         }
+       }, colnames = FALSE, sanitize.text.function=function(x){x})
 
        output$FPIoutput_sector <- renderPlot({
          if (!is.null(Info$file)) {
@@ -167,8 +176,99 @@ FPI_Server <- function(id, Info, FPI_2) {
          FPI_2$Summary <- NULL
        })
 
+
+       output$downloadFPIRep <- downloadHandler(
+         filename = function() {
+           if (input$filetype == 'html') {
+             paste("FPI_Report", Sys.Date(), ".html", sep="")
+           } else {
+             paste("FPI_Report", Sys.Date(), ".pdf", sep="")
+           }
+
+         },
+         content = function(file) {
+
+           if (input$filetype == 'html') {
+             output_format <- 'html_document'
+           } else {
+             output_format <- 'pdf_document'
+           }
+           AM("------------- Generating FPI Report --------------")
+           AM(paste0("File type: ", input$filetype))
+           AM(paste0("output_format: ", output_format))
+
+           GenFPIreport(Info, input$baseline, BaseLine, FPI_2$Summary, file, output_format)
+
+         }
+       )
+
+
+
+
      }
   )
+}
+
+GenFPIreport <- function(Info,input_baseline, BaseLine, FPI_2_Summary, file, output_format) {
+  FPIReport <- "RMD/FPIReport.rmd" #file.path(tempdir(), "report.Rmd")
+  # file.copy("RMD/FPIReport.rmd", FPIReport, overwrite = TRUE)
+
+  params <- list(Info=Info,
+                 input_baseline=input_baseline,
+                 BaseLine=BaseLine,
+                 FPI_2_Summary=FPI_2_Summary)
+
+  rmarkdown::render(FPIReport, output_file = file,
+                    output_format = output_format,
+                    params = params,
+                    envir = new.env(parent = globalenv()))
+}
+
+
+makemetadata <- function(metadata) {
+  # drop empty columns
+  ind <- apply(apply(metadata, 2, is.na), 2, all)
+  metadata <- metadata[,!ind]
+
+  # drop empty rows
+  ind <- apply(apply(metadata, 2, is.na), 1, all)
+  metadata <- metadata[!ind,]
+
+  names <- c('A. Country',
+             'B. Location',
+             'C. Fishery',
+             'D. Single or Multi-species',
+             'E. Species',
+             'F. Date',
+             'G. Reference',
+             'H. Author',
+             'I. Author')
+
+  # get info - could be after : or presumably on the next line(s)
+  get_info <- function(i=1, metadata, names) {
+    text <- unlist(metadata[,1])
+    ind <- which(grepl(names[i], text))
+
+    # is it after :?
+    title <- strsplit(text[ind], ":")[[1]][1]
+    txt <- strsplit(text[ind], ":")[[1]][2]
+    if (is.na(txt)) txt <- ''
+    if (nchar(txt)<1) txt <- ''
+    # more on next line
+    y <- 0
+    more <- TRUE
+    while (more) {
+      y <- y+1
+      chk <- grepl(names[i+y], text[ind+y])
+      if (is.na(chk) || chk) more <- FALSE
+      txt <- paste(txt, sep=", ")
+    }
+    c(title, txt)
+  }
+
+  DF <- t(sapply(1:length(names), get_info, metadata=metadata, names=names))
+  DF[,1] <- paste0('<strong>', DF[,1], '</strong>')
+  DF
 }
 
 

@@ -9,6 +9,8 @@ hist_spawnbio <- function(Info) {
     nyears <- dim(SB)[2]
     SB <- SB/MSEhist@Ref$ByYear$SSB0[, 1:nyears]
 
+    Current_Year <- max(c(Info$Data@LHYear, Info$Data@Year), na.rm=TRUE)
+
     yrs<-Current_Year-(nyears:1)
 
     df <- data.frame(Year=rep(yrs, each=nsim), Sim=1:nsim, SB=as.vector(SB))
@@ -30,6 +32,7 @@ hist_catch <- function(Info) {
     Catch <- apply(MSEhist@TSdata$Removals,1:2,sum)
     nsim <- dim(Catch)[1]
     nyears <- dim(Catch)[2]
+    Current_Year <- max(c(Info$Data@LHYear, Info$Data@Year), na.rm=TRUE)
     yrs<-Current_Year-(nyears:1)
     Catch <- Catch/Catch[,nyears]
 
@@ -52,6 +55,7 @@ hist_recruitment <- function(Info) {
     Rec <- apply(MSEhist@AtAge$Number[,1,,],1:2,sum)
     nsim <- dim(Rec)[1]
     nyears <- dim(Rec)[2]
+    Current_Year <- max(c(Info$Data@LHYear, Info$Data@Year), na.rm=TRUE)
     yrs<-Current_Year-(nyears:1)
     Rec <- Rec/MSEhist@SampPars$Stock$R0
 

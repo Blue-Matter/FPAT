@@ -85,7 +85,8 @@ radar_plot <- function(DF, title, n=25, vlcex=1, BaseLineDat=NULL, FPI_2DF=NULL)
     legend(
       x = "bottom", legend = rownames(DF3[-c(1,2),]), horiz = TRUE,
       bty = "n", pch = 20 , col =pcol,
-      text.col = "black", cex = 1.25, pt.cex = 2
+      text.col = "black", cex = 1.25, pt.cex = 2,
+      inset=c(0,-0.05), xpd=NA
     )
   }
 

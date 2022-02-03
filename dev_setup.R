@@ -23,7 +23,7 @@ Info$sheets <- readxl::excel_sheets(Info$file$datapath)
 Info$Summary <- readxl::read_excel(Info$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
 Info$Output_table <- readxl::read_excel(Info$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
 Info$Data <- XL2Data(name=Info$file$datapath, sheet='12. Fishery Data')
-Info$MERA.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. MERA Questions', .name_repair = 'minimal')
+Info$MERA.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
 Info$FPI.Inputs <- readxl::read_excel(Info$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
 Info$FPI.Cover <- readxl::read_excel(Info$file$datapath, sheet='3. Cover Page', .name_repair = 'minimal')
 

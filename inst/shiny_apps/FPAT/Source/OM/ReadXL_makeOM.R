@@ -467,7 +467,11 @@ makeOM <- function(Info) {
     OM<-NULL
   }else{
     if(length(asslist)!=0){
-      shinyalert(title="When importing the FPAT spreadsheet the following assumptions were made:", text=paste(unlist(asslist),collapse="\n\n"), type="info", size='l')
+      # shinyalert(title="When importing the FPAT spreadsheet the following assumptions were made:",
+                 # text=paste(unlist(asslist),collapse="\n\n"), type="info", size='l')
+      shinyalert(title="Note:",
+                 text='The uploaded FPAT spreadsheet is missing some information needed to create the operating model. Assumed values were used. These assumptions are listed in the operating model report.',
+                 type="info", size='s')
       AM("--- Loading assumptions ----------------")
       AM(paste(unlist(asslist),collapse="\n"))
 
@@ -476,6 +480,7 @@ makeOM <- function(Info) {
     }
     OM@cpars$control=list(progress=T,ntrials=1000,fracD=0.2)
   }
+  OM@Misc$asslist <- asslist
 
   OM
 

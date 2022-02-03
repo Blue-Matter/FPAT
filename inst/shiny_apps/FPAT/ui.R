@@ -1,15 +1,15 @@
 
 fluidPage(style="position: absolute;  padding-left: 40px; padding-right: 40px;",
-          useShinyalert(),
-          useShinydashboard(),
-          includeScript(path = "www/js/js4checkbox.js"),
-          includeScript(path = "www/js/index.js"),
 
-          tags$head(
-            tags$link(rel='stylesheet', type='text/css', href='styles.css'),
-            tags$link(href="fa/css/all.css", rel="stylesheet"), # font-awesome
-            tags$style(HTML("#SessionID{font-size:12px;}")),
-            tags$script('
+  useShinydashboard(),
+  includeScript(path = "www/js/js4checkbox.js"),
+  includeScript(path = "www/js/index.js"),
+
+  tags$head(
+    tags$link(rel='stylesheet', type='text/css', href='styles.css'),
+    tags$link(href="fa/css/all.css", rel="stylesheet"), # font-awesome
+    tags$style(HTML("#SessionID{font-size:12px;}")),
+    tags$script('
         var dimension = [0, 0];
         $(document).on("shiny:connected", function(e) {
             dimension[0] = window.innerWidth;

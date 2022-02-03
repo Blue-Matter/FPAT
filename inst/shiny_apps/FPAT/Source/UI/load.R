@@ -30,7 +30,7 @@ Load_UI <- function(id, label="Load") {
                        title='Select an existing FPAT case study')
               ),
               column(6,
-                     actionButton(ns("LoadSelected"),label="Load case study",icon=icon("cloud-upload"))
+                     actionButton(ns("LoadSelected"),label="Load case study",icon=icon("cloud-upload-alt"))
               )
           )
       )

@@ -37,7 +37,7 @@ Home_UI <- function(id, label="Home") {
                to achieve community, economic, and ecological sustainability,',
              'and', a(href='https://openmse.com/', 'openMSE:', target="_blank"), 'an open-source framework for
              evaluating the performance of alternative modes of management for a fishery.'),
-           p('The FPAT processs uses the two tools for several purposes:',
+           p('The FPAT process uses the two tools for several purposes:',
              tags$ol(
                tags$li('Characterize the current state of the fishery using the Fishery Performance Indicators;'),
                tags$li('Compare the FPI scores to baselines from other fisheries and regions;'),

@@ -1,0 +1,67 @@
+---
+title: "FPI Report"
+params:
+  Info: na
+  input_baseline: na
+  BaseLine: na
+  FPI_2_Summary: na
+fig_width: 6 
+fig_height: 6
+---
+  
+```{r include=FALSE}
+knitr::opts_chunk$set(echo=FALSE)
+
+```
+
+## FPI Metadata
+
+```{r}
+knitr::kable(makemetadata(params$Info$FPI.Cover))
+
+```
+
+## Outputs: Sector
+
+```{r, results='asis'}
+cat(readLines('../Data/FPI_output_sector.txt'), sep = '\n')
+```
+
+
+```{r}
+output_dim_scores(params$Info$Summary, 
+                  params$input_baseline, 
+                  params$BaseLine, 
+                  params$FPI_2_Summary)
+```
+
+## Outputs: Triple Bottom Line
+
+```{r, results='asis'}
+cat(readLines('../Data/FPI_output_tpl.txt'), sep = '\n')
+```
+
+
+```{r}
+output_scores_TBL(params$Info$Summary, 
+                  params$input_baseline, 
+                  params$BaseLine, 
+                  params$FPI_2_Summary)
+```
+
+
+## Inputs: Enabling Conditions
+
+```{r, results='asis'}
+cat(readLines('../Data/FPI_input_enabling.txt'), sep = '\n')
+```
+
+
+```{r}
+input_dim_scores(params$Info$Summary, 
+                  params$input_baseline, 
+                  params$BaseLine, 
+                  params$FPI_2_Summary)
+```
+
+
