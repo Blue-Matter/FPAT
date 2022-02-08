@@ -132,7 +132,7 @@ makeOM <- function(Info) {
   if (!'13. openMSE Questions' %in% sheets) errlist$openMSEsheet <- "FPI+ is missing '13. openMSE Questions' sheet"
   Data <- Info$Data #XL2Data(name=FPIfile, sheet='12. Fishery Data')
   openMSE.Qs <- Info$openMSE.Qs #readxl::read_excel(FPIfile, sheet='13. openMSE Questions', .name_repair = 'minimal')
-  FPI.Inputs <- Info$FPI.Inputs #readxl::read_excel(FPIfile, sheet='6. Input-table', .name_repair = 'minimal')
+  FPI.Inputs <<- Info$FPI.Inputs #readxl::read_excel(FPIfile, sheet='6. Input-table', .name_repair = 'minimal')
   FPI.Cover <- Info$FPI.Cover #readxl::read_excel(FPIfile, sheet='3. Cover Page', .name_repair = 'minimal')
 
   plusgroup<-40
@@ -413,6 +413,7 @@ makeOM <- function(Info) {
   OM@cpars$MPA[1:(Nyears-1),3]<-0
   OM@cpars$MPA[Nyears:OM@proyears,1]<-0
 
+
   # ! Initial depletion defaults to unfished !
   asslist$InitD <- "Initial historical depletion was assumed to be 1 (starting from unfished conditions)."
 
@@ -481,7 +482,7 @@ makeOM <- function(Info) {
     OM@cpars$control=list(progress=T,ntrials=1000,fracD=0.2)
   }
   OM@Misc$asslist <- asslist
-
+  OM <<- OM
   OM
 
 } # end of loaded OM

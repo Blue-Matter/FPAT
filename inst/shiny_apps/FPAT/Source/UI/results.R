@@ -65,21 +65,10 @@ Results_Server <- function(id,Info) {
 
                  output$selectedMPs <- renderUI({
                    if (length(Info$MPsel)>0) {
-
                      mps <- Info$MPsel
-                     # clunky renaming
-                     mps[mps=='CurC'] <- 'Current Catch'
-                     mps[mps=='curEref'] <- 'Current Effort'
-                     mps[mps=='matlenlim'] <- 'Size Limit 1'
-                     mps[mps=='matlenlim2'] <- 'Size Limit 2'
-                     mps[mps=='Ltarget1'] <- 'Length Targeting 1'
-                     mps[mps=='Ltarget2'] <- 'Length Targeting 2'
-                     mps[mps=='Itarget1'] <- 'Index Targeting 1'
-                     mps[mps=='Itarget2'] <- 'Index Targeting 2'
-                     text <- paste0(mps, collapse = ', ')
+                     ns <- NS(id)
                      tagList(
-                       h5(strong('Selected MPs:')),
-                       p(text)
+                       selectInput(ns('MPselect'), 'Selected MPs:', choices=mps, selected=mps, multiple = TRUE)
                      )
                    }
 
@@ -107,18 +96,17 @@ Results_Server <- function(id,Info) {
                                                                          max=Linf,
                                                                          value=0.5*Linf,
                                                                          step=step),
+                                                             p('Size limit is in the same units as length parameters specified in the FPAT input file.'),
                                                              actionButton(ns('submitSL'),
                                                                           'Submit')
                                                     ),
-                                                    tabPanel(h5('Custom Spatial Closure'),
+                                                    tabPanel(h5('Advanced - Import MP'),
                                                              br(),
-                                                             p('Coming soon!')
-
-                                                    ),
-                                                    tabPanel(h5('Upload MP'),
-                                                             br(),
-                                                             p('Coming soon!')
-
+                                                             p('Import an MP (saved using saveRDS)'),
+                                                             p("Once a file is uploaded, provide a name and click button to add the MP."),
+                                                             fileInput(ns("ImportMP"),label=NULL, accept=c('.rdata', '.rds', '.rda')),
+                                                             textInput(ns("MS_Import_Label"),label=NULL, value = "", placeholder = "Name of management procedure"),
+                                                             actionButton(ns("loadMP"),"Add MP",style='color:red',icon=icon('cogs'))
                                                     )
                                                   )
                                   )
@@ -129,26 +117,84 @@ Results_Server <- function(id,Info) {
                    }
                  })
 
+                 shinyjs::disable("loadMP")
+
+                 observeEvent(input$ImportMP, {
+                   filey <<- input$ImportMP
+
+                   tryCatch({
+                     MP_out <<- readRDS(file = filey$datapath)
+                     stopifnot(typeof(MP_out) == "closure" && inherits(MP_out, "MP"))
+                     shinyjs::enable("loadMP")
+
+                   }, error = function(e) {
+                     AM(paste0(e,"\n"))
+                     shinyalert(paste0("No MP was found in file: ", filey$name), type = "error")
+                     AM(paste0("No MP was found in file: ", filey$name))
+                     return(0)
+                   })
+                 })
+
+                 observeEvent(input$loadMP, {
+                   if(!nchar(input$MS_Import_Label)) {
+                     shinyalert("No name for the MP was provided.", type = "error")
+                   }
+
+                   filey <- input$ImportMP
+                   tryCatch({
+                     MP_out <- readRDS(file = filey$datapath)
+                     stopifnot(typeof(MP_out) == "closure" && inherits(MP_out, "MP"))
+
+                     if(input$MS_Import_Label %in% Info$MPsel) {
+                       AM(paste0("Error: ", input$MS_Import_Label, " MP already selected. Choose another name."))
+                     } else {
+                       nm <- input$MS_Import_Label
+                       nm <- gsub(" ", "_", nm)
+                       assign(nm, MP_out, envir = .GlobalEnv)
+                       Info$MPsel<-c(Info$MPsel, nm)
+                       Info$MPsel <- unique(Info$MPsel)
+                       AM(paste(c("Management strategies selected:", Info$MPsel),collapse= " "))
+                     }
+                   }, error = function(e) {
+                     AM(paste0(e,"\n"))
+                     shinyalert(paste0("No MP was found in file: ", filey$name), type = "error")
+                     AM(paste0("No MP was found in file: ", filey$name))
+                     return(0)
+                   })
+                 })
+
                  observeEvent(input$submitSL, {
                    mp <- makeSLMP(input$slval)
                    nm <- input$SLname
                    nm <- gsub(" ", "_", nm)
-                   assign(nm, mp, .GlobalEnv)
-                   Info$MPsel<-c(Info$MPsel, nm)
-                   Info$MPsel <- unique(Info$MPsel)
-                   AM(paste(c("Management strategies selected:", Info$MPsel),collapse= " "))
+                   if (nchar(nm)>0) {
+                     assign(nm, mp, .GlobalEnv)
+                     Info$MPsel<-c(Info$MPsel, nm)
+                     Info$MPsel <- unique(Info$MPsel)
+                     AM(paste(c("Management strategies selected:", Info$MPsel),collapse= " "))
+                   }
+
                  })
 
                  observeEvent(input$MPset,{
                    MPs<-list(
-                     SQ=c("CurC","curEref"),
-                     Size=c("matlenlim","matlenlim2"),
-                     LB=c("Ltarget1","Ltarget2"),
-                     IB=c("Itarget1","Itarget2")
+                     SQ=c("Current_Catch","Current_Effort"),
+                     Size=c("Size_Limit_1","Size_Limit_2"),
+                     LB=c("Length_Targeting_1","Length_Targeting_2"),
+                     IB=c("Index_Targeting_1","Index_Targeting_2")
                    )
                    MPsel<-NULL
                    for(i in 1:length(MPs))if(names(MPs)[i] %in% input$MPset) MPsel <- c(MPsel,MPs[[i]])
                    Info$MPsel<-MPsel
+
+                   AM(paste(c("Management strategies selected:", Info$MPsel),collapse= " "))
+
+
+                 })
+
+                 observeEvent(input$MPselect, {
+                   selectMPs<-input$MPselect
+                   Info$MPsel <- selectMPs
                    AM(paste(c("Management strategies selected:", Info$MPsel),collapse= " "))
                  })
 

@@ -60,6 +60,16 @@ for (i in seq_along(categories)) {
 
 BaseLineChoices <<- BaseLineChoices
 
+# Rename MPs
+Current_Catch <- CurC
+Current_Effort <- curEref
+Size_Limit_1 <- matlenlim
+Size_Limit_2 <- matlenlim2
+Length_Targeting_1 <- Ltarget1
+Length_Targeting_2 <- Ltarget2
+Index_Targeting_1 <- Itarget1
+Index_Targeting_2 <- Itarget2
+
 
 
 

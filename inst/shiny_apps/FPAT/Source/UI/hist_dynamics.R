@@ -70,33 +70,57 @@ HistDynamics_Server <- function(id, Info, Toggles) {
                ),
                box(width=3,status='primary', solidHeader = TRUE,
                    title='Fishery Simulation Metadata',
-                   tableOutput(ns('FisheryMetadata'))
+                   tableOutput(ns('FisheryMetadata')),
+                   htmlOutput(ns('Assumptions'))
                ),
 
                box(width=3,status='primary', solidHeader = TRUE,
-                   title='Download and Upload',
-                   h4('Download Full OM Report'),
+                   title='Download OM Report',
                    p('An Operating Model Report with plots of all simulated fishery dynamics and
                                        parameters can be downloaded by clicking the button below.'),
                    radioButtons(ns('filetype'), 'Report File Type',
                                 choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
                    downloadButton(ns('downloadOMRep'), 'Download OM Report'),
-                                 br(),
-                   h4('Download OM '),
-                   p('For more detailed analysis, the Operating Model object can be downloaded',
-                     'and used in the',
-                     a(href='https://openmse.com/', 'openMSE', target="_blank"),
-                     'framework.'),
-                   downloadButton(ns('downloadOM'), 'Download OM'),
-                   br(),
-                   h4('Load an OM from file'),
-                   p('An openMSE Operating Model object can be uploaded here.',
-                     'This will replace the operating model constructed from the FPAT data file.'),
-                   fileInput(ns("LoadOM"),label=NULL, accept=c('.OM', '.rda', '.rdata'))
+                   br()
+               ),
+               box(width=3,status='primary', solidHeader = TRUE,
+                   title='Advanced',
+                   bsCollapse(id = "collapseExample",
+                              bsCollapsePanel("Download OM",
+                                              p('For more detailed analysis, the Operating Model object can be downloaded',
+                                                'and used in the',
+                                                a(href='https://openmse.com/', 'openMSE', target="_blank"),
+                                                'framework.'),
+                                              downloadButton(ns('downloadOM'), 'Download OM'),
+                                              style = "info"),
+                              bsCollapsePanel("Load an OM from file",
+                                              p('An openMSE Operating Model object can be uploaded here.',
+                                                'This will replace the operating model constructed from the FPAT data file.'),
+                                              fileInput(ns("LoadOM"),label=NULL, accept=c('.OM', '.rda', '.rdata')),
+                                              style = "info")
                    )
+               )
              )
            )
          }
+       })
+
+       output$Assumptions <- renderUI({
+         asslist <- Info$OM@Misc$asslist
+         if (length(asslist)>0) {
+           ns <- NS(id)
+           actionButton(ns("assumptions"), "Assumptions")
+
+         }
+       })
+
+       observeEvent(input$assumptions, {
+        asslist <- Info$OM@Misc$asslist
+        if (length(asslist)>0) {
+          shinyalert("The following assumptions were made when the OM was created",
+                     paste(asslist, collapse='\n\n'), type = "info", size="m")
+        }
+
        })
 
        output$FisheryMetadata <- renderTable({
@@ -248,8 +272,7 @@ GenOMreport <- function(MSEhist, file, output_format, nsamp=3) {
 }
 
 makefisherymetadata <- function(Info) {
-  asslist <<- Info$OM@Misc$asslist
-
+  data <- Info$Data
   if (class(Info$MSEhist) == 'Hist') {
     MSEhist <- Info$MSEhist
     SB <- apply(MSEhist@TSdata$SBiomass,1:2,sum)
@@ -259,7 +282,7 @@ makefisherymetadata <- function(Info) {
     yrs <- (lhyear-nyears+1):lhyear
     yrs <- paste0(yrs[1], "-", yrs[length(yrs)])
 
-    data <- Info$Data
+
     return(  c(paste0('<strong>Name: </strong>',data@Name),
                paste0('<strong>Species: </strong>', '<i>', data@Species, '</i>'),
                paste0('<strong>Common Name: </strong>', data@Common_Name),
