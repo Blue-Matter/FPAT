@@ -106,7 +106,7 @@ HistDynamics_Server <- function(id, Info, Toggles) {
        })
 
        output$Assumptions <- renderUI({
-         asslist <- Info$OM@Misc$asslist
+         asslist <<- Info$OM@Misc$asslist
          if (length(asslist)>0) {
            ns <- NS(id)
            actionButton(ns("assumptions"), "Assumptions")
@@ -118,7 +118,7 @@ HistDynamics_Server <- function(id, Info, Toggles) {
         asslist <- Info$OM@Misc$asslist
         if (length(asslist)>0) {
           shinyalert("The following assumptions were made when the OM was created",
-                     paste(asslist, collapse='\n\n'), type = "info", size="m")
+                     paste('<li>', asslist, '</li>', collapse='\n\n'), type = "info", size="m", html=TRUE)
         }
 
        })
@@ -202,22 +202,36 @@ HistDynamics_Server <- function(id, Info, Toggles) {
        )
 
        observeEvent(input$LoadOM, {
-         OM <- readRDS(input$LoadOM$datapath)
+         OM <- try(readRDS(input$LoadOM$datapath), silent=T)
+         AM("--- Loading OM ----------------")
+         AM(paste0('File: ', input$LoadOM$datapath))
+
          if(class(OM) =='OM') {
            Info$OM <- OM
            if(!is.null(Info$OM)){
+             AM('Simulating fishery')
              withProgress(message = "Constructing operating model", value = 0, {
-               Info$MSEhist<-runMSE(Info$OM,Hist=T,extended=T)
+               MSEhist<-try(runMSE(Info$OM,Hist=T,extended=T), silent=T)
              })
+             if (class(MSEhist)=='Hist') {
+               AM('Simulating fishery complete')
+               Info$MSEhist<-MSEhist
+             } else {
+               AM('Simulating fishery error')
+               shinyalert("FPAT did not build", paste("Error:", MSEhist), type = "error")
+                            }
              Toggles$Loaded<-as.integer(!is.null(Info$OM))
            }
 
          } else {
            shinyalert("Uploaded file was not valid openMSE OM Object", type = "error")
+           AM('Error uploading OM Object')
          }
        })
      })
 }
+
+
 
 GenOMreport <- function(MSEhist, file, output_format, nsamp=3) {
   SampCpars <- list() # empty list

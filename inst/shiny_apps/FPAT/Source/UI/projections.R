@@ -39,10 +39,12 @@ Results_Server <- function(id,Info) {
                                     h4(strong('Index-based')),
                                     p('Two management procedures that adjust the annual catch limit based on the trend in the index of
                            abundance.'),
+                                    h4(strong('Spatial Management')),
+                                    p('Two management procedures that 1) open an existing spatial closure (if one exists) and 2) close the planned spatial closure (if any)'),
                                     checkboxGroupInput(ns("MPset"),label="Select Management Procedures",
                                                        choiceNames=c("Status Quo Catch and Effort","Size limits","Length-based",
-                                                                     "Index-based"),
-                                                       choiceValues=c("SQ","Size","LB","IB"),selected=c("SQ")),
+                                                                     "Index-based", "Spatial Management"),
+                                                       choiceValues=c("SQ","Size","LB","IB", "Spatial"),selected=c("SQ")),
                                     htmlOutput(ns('customMPs')),
                                     htmlOutput(ns('selectedMPs')),
                                     br(),
@@ -181,7 +183,8 @@ Results_Server <- function(id,Info) {
                      SQ=c("Current_Catch","Current_Effort"),
                      Size=c("Size_Limit_1","Size_Limit_2"),
                      LB=c("Length_Targeting_1","Length_Targeting_2"),
-                     IB=c("Index_Targeting_1","Index_Targeting_2")
+                     IB=c("Index_Targeting_1","Index_Targeting_2"),
+                     Spatial=c('Open_Existing', 'Close_Planned')
                    )
                    MPsel<-NULL
                    for(i in 1:length(MPs))if(names(MPs)[i] %in% input$MPset) MPsel <- c(MPsel,MPs[[i]])

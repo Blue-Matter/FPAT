@@ -71,8 +71,24 @@ Index_Targeting_1 <- Itarget1
 Index_Targeting_2 <- Itarget2
 
 
+# spatial MPs
+
+Open_Existing <- function(x, Data, ...) {
+  rec <- new("Rec")
+  rec@Allocate <- 1
+  rec@Spatial <- rep(1, 3)
+  rec
+}
+class(Open_Existing) <- 'MP'
 
 
+Close_Planned <- function(x, Data, ...) {
+  rec <- new("Rec")
+  rec@Allocate <- 1
+  rec@Spatial <- c(0,1,0)
+  rec
+}
+class(Close_Planned) <- 'MP'
 
 
 

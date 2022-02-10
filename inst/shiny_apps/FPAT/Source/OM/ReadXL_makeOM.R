@@ -371,12 +371,14 @@ makeOM <- function(Info) {
   ind <- which(FPI.Inputs[,3] == "MPAs and Sanctuaries")
   MPAq <- as.integer(FPI.Inputs[ind,6])
   Ahrng<-c(minA1[MPAq],maxA1[MPAq])
+  Ahrng[Ahrng<=0] <- 0.001
 
   ind <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[5], "[0-9]+")[[1]])
   Vhrng<-c(minmix[ind],maxmix[ind])
 
   ind <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[6], "[0-9]+")[[1]])
   Arng<-c(minA[ind],maxA[ind])
+  Arng[Arng<=0] <- 0.001
 
   ind <- as.numeric(stringr::str_extract_all(openMSE.Qs$Score[7], "[0-9]+")[[1]])
   Vrng<-c(minmix[ind],maxmix[ind])
@@ -407,12 +409,17 @@ makeOM <- function(Info) {
   probs<-cbind(Vsim,V2,Vhsim)
 
   mov<-array(NA,c(nsim, OM@maxage+1, nareas, nareas, Nyears+OM@proyears))
-  for(i in 1:nsim)mov[i,,,,]<-array(rep(makemov(fracs=Asize[i,], prob=probs[i,]),each=OM@maxage+1),c(OM@maxage+1,nareas,nareas,Nyears+OM@proyears))
+  for(i in 1:nsim)mov[i,,,,]<-array(rep(makemov(fracs=Asize[i,], prob=probs[i,]),each=OM@maxage+1),
+                                    c(OM@maxage+1,nareas,nareas,Nyears+OM@proyears))
   OM@cpars$mov<-mov
+  # potential future MPA - open unless closed by MP
   OM@cpars$MPA<-matrix(1,nrow=OM@nyears+OM@proyears,ncol=3)
-  OM@cpars$MPA[1:(Nyears-1),3]<-0
-  OM@cpars$MPA[Nyears:OM@proyears,1]<-0
+  # existing MPA - default stays closed
+  OM@cpars$MPA[,3]<-0
 
+  OM@cpars$Asize <- Asize
+
+  OM <<- OM
 
   # ! Initial depletion defaults to unfished !
   asslist$InitD <- "Initial historical depletion was assumed to be 1 (starting from unfished conditions)."
