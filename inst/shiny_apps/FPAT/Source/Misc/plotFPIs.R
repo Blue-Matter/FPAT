@@ -32,8 +32,8 @@ radar_plot <- function(DF, title, n=25, vlcex=1, BaseLineDat=NULL, FPI_2DF=NULL)
   DF$c <- as.numeric(DF$c)
   # insert new line after n characters
   DF$b <- gsub(paste0('(.{1,',n,'})(\\s|$)'), '\\1\n', DF$b)
+  DF2 <- tidyr::pivot_wider(DF[,2:3], names_from = 1, values_from=2)
 
-  DF2 <- tidyr::pivot_wider(DF, id_cols=3, names_from = 2, values_from=3)
   max <- DF2
   max[max!=5] <- 5
   min <- DF2
