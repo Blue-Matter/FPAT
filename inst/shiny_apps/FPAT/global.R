@@ -1,6 +1,6 @@
 packages <- c('dplyr', 'DT', 'ggplot2', 'ggrepel', 'shinyWidgets',
               'shiny', 'shinyBS', 'shinydashboard', 'shinyalert',
-              'readxl', 'stringr', 'openMSE', 'shinyjs')
+              'readxl', 'stringr', 'openMSE', 'shinyjs', 'Hmisc')
 
 for (pkg in packages) {
   req <- require(pkg, character.only = TRUE)
