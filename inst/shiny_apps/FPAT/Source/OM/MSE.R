@@ -126,7 +126,7 @@ subsetdf <- function(df, axis) {
       select(MP, Val=all_of(Var))
 
     DF <- DF %>% group_by(MP) %>%
-      summarize(Median=median(Val),
+      dplyr::summarize(Median=median(Val),
                 Low=quantile(Val, quants[1]),
                 Hi=quantile(Val, quants[2]),
                 Prob=mean(Val>axis$Reference))
