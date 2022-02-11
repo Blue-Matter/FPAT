@@ -3,7 +3,9 @@
 
 hist_spawnbio <- function(Info) {
   if (class(Info$MSEhist) == 'Hist') {
+
     MSEhist <- Info$MSEhist
+
     SB <- apply(MSEhist@TSdata$SBiomass,1:2,sum)
     nsim <- dim(SB)[1]
     nyears <- dim(SB)[2]
