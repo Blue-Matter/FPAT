@@ -1,16 +1,28 @@
+packages <- c('dplyr', 'DT', 'ggplot2', 'ggrepel', 'shinyWidgets',
+              'shiny', 'shinyBS', 'shinydashboard', 'shinyalert',
+              'readxl', 'stringr', 'openMSE', 'shinyjs')
 
-library(dplyr)
-library(DT)
-library(ggplot2)
-library(ggrepel)
-library(shinyWidgets)
-library(shiny)
-library(shinyBS)
-library(shinydashboard)
-library(shinyalert)
-library(readxl)
-library(stringr)
-library(openMSE)
+for (pkg in packages) {
+  req <- require(pkg, character.only = TRUE)
+
+  if (!req) {
+    install.packages(pkg)
+    require(pkg, character.only = TRUE)
+  }
+}
+
+# library(dplyr)
+# library(DT)
+# library(ggplot2)
+# library(ggrepel)
+# library(shinyWidgets)
+# library(shiny)
+# library(shinyBS)
+# library(shinydashboard)
+# library(shinyalert)
+# library(readxl)
+# library(stringr)
+# library(openMSE)
 
 
 #source('../../../R/plotFPIs.R')
