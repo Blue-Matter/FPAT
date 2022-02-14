@@ -239,7 +239,8 @@ Results_Server <- function(id,Info) {
                                          selectInput(ns('Proj_Var'),
                                                      label = 'Projection Variable',
                                                      choices = c('Spawning Biomass', 'Catch')),
-                                         htmlOutput(ns('Proj_opts'))
+                                         htmlOutput(ns('Proj_opts')),
+                                         htmlOutput(ns('Proj_text'))
                                   )
                          ),
                          tabPanel(h5('Trade-Off Plots', style='color:black;'),
@@ -267,6 +268,7 @@ Results_Server <- function(id,Info) {
                  output$Projection_plot <- renderPlot({
                    if (input$Proj_Var == 'Spawning Biomass') opt <- input$SBopts
                    if (input$Proj_Var == 'Catch') opt <- input$Copts
+
                    Projection_plot(Info$MSEproj, input$Proj_Var, opt)
                  },
                  width=function() {
@@ -294,6 +296,24 @@ Results_Server <- function(id,Info) {
                      )
                    }
                    return(out)
+                 })
+
+                 output$Proj_text <- renderUI({
+                   ns <- NS(id)
+                   nMPs <- Info$MSEproj@nMPs
+                   if (nMPs>1) p <- 'plots'
+                   if (nMPs==1) p <- 'plot'
+                   if (input$Proj_Var=='Spawning Biomass') {
+                     if (input$SBopts=='SB0') {
+                       txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of spawning biomass relative to average unfished spawning biomass (SB0) for each MP.')
+                     } else {
+                       txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of spawning biomass relative to spawning biomass corresponding with maximum sustainable yield (SBMSY) for each MP.')
+                     }
+                   }
+                   if (input$Proj_Var=='Catch') {
+                     txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of projected catch relative to catch in the most recent year for each MP.')
+                   }
+                   tagList(p(txt))
                  })
 
                  output$TradeOff_plot <- renderPlot({
@@ -336,7 +356,7 @@ Results_Server <- function(id,Info) {
                      tagList(
                        selectInput(ns('x_var'),
                                    label = 'Variable',
-                                   choices = c('SB/SB0', 'SB/SBMSY', 'Catch')),
+                                   choices = c('SB/SB0', 'SB/SBMSY', 'Catch', 'AAVY', 'AAVE')),
                        sliderInput(ns('x_year'),
                                    label = h4("Years"),
                                    min = Yr1,
@@ -380,7 +400,7 @@ Results_Server <- function(id,Info) {
                      tagList(
                        selectInput(ns('y_var'),
                                    label = 'Variable',
-                                   choices = c('SB/SB0', 'SB/SBMSY', 'Catch'),
+                                   choices = c('SB/SB0', 'SB/SBMSY', 'Catch', 'AAVY', 'AAVE'),
                                    selected='Catch'),
                        sliderInput(ns('y_year'),
                                    label = h4("Years"),

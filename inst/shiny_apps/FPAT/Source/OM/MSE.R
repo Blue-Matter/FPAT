@@ -60,6 +60,11 @@ MakeDF <- function(MSE) {
 
 # --- Projection Plot ----
 Projection_plot <- function(MSE, Var=NULL, opt=NULL) {
+
+  MSE <<- MSE
+  Var <<- Var
+  opt <<- opt
+
   if (class(MSE) == 'MSE' & !is.null(Var) & !is.null(opt)) {
     df <- MakeDF(MSE)
 
@@ -72,7 +77,6 @@ Projection_plot <- function(MSE, Var=NULL, opt=NULL) {
         var <- 'SB_SBMSY'
         ylab <- 'Spawning Biomass relative to SBMSY'
       }
-
       DF <- df %>% select(Sim, MP, Year, all_of(var)) %>%
         tidyr::pivot_longer(cols=4)
     }
@@ -161,47 +165,113 @@ TradeOff_plot <- function(MSE, Xaxis=NULL, Yaxis=NULL, incEx=TRUE, incEy=TRUE) {
   if (class(MSE) == 'MSE' & !is.null(Xaxis) & !is.null(Yaxis)) {
     df <- MakeDF(MSE)
 
-    # X-axis
-    Xax <- subsetdf(df, Xaxis)
+    if (length(Xaxis$Var)>0 & length(Yaxis$Var)>0) {
+      # X-axis
+      if (Xaxis$Var %in% c('AAVY', 'AAVE')) {
+        Xax <- calcVar(MSE, Xaxis)
+      } else {
+        Xax <- subsetdf(df, Xaxis)
+      }
 
-    # Yaxis
-    Yax <- subsetdf(df, Yaxis)
 
-    # make dataframe
-    DF <- data.frame(MP=Xax$MP,
-                     x=Xax$val, y=Yax$val,
-                     xlow=Xax$Low, xhi=Xax$Hi,
-                     ylow=Yax$Low, yhi=Yax$Hi,
-                     xlab=Xax$lab[1],
-                     ylab=Yax$lab[1],
-                     xerror=Xax$error_bars[1],
-                     yerror=Yax$error_bars[1])
+      # Yaxis
+      if (Yaxis$Var %in% c('AAVY', 'AAVE')) {
+        Yax <- calcVar(MSE, Yaxis)
+      } else {
+        Yax <- subsetdf(df, Yaxis)
+      }
 
-    if (nrow(DF)>0) {
-      if (!incEx) DF$xerror <- FALSE
-      if (!incEy) DF$yerror <- FALSE
 
-      p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
-        geom_point() +
-        ggrepel::geom_text_repel(aes(label=MP),size=6)
+      # make dataframe
+      DF <- data.frame(MP=Xax$MP,
+                       x=Xax$val, y=Yax$val,
+                       xlow=Xax$Low, xhi=Xax$Hi,
+                       ylow=Yax$Low, yhi=Yax$Hi,
+                       xlab=Xax$lab[1],
+                       ylab=Yax$lab[1],
+                       xerror=Xax$error_bars[1],
+                       yerror=Yax$error_bars[1])
 
-      # add error_bars
-      if (DF$yerror[1])
-        p <- p + ggplot2::geom_errorbar(aes(ymin=ylow, ymax=yhi))
-      if (DF$xerror[1])
-        p <- p + ggplot2::geom_errorbarh(aes(xmin=xlow, xmax=xhi))
+      if (nrow(DF)>0) {
+        if (!incEx) DF$xerror <- FALSE
+        if (!incEy) DF$yerror <- FALSE
 
-      p <-  p +
-        theme_bw() +
-        expand_limits(x=c(0,1), y=c(0,1)) +
-        guides(color='none') +
-        labs(x=DF$xlab[1],
-             y=DF$ylab[1])
+        p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
+          geom_point() +
+          ggrepel::geom_text_repel(aes(label=MP),size=6)
 
-      p + theme(axis.text=element_text(size=12),
-                axis.title=element_text(size=16))
+        # add error_bars
+        if (DF$yerror[1])
+          p <- p + ggplot2::geom_errorbar(aes(ymin=ylow, ymax=yhi))
+        if (DF$xerror[1])
+          p <- p + ggplot2::geom_errorbarh(aes(xmin=xlow, xmax=xhi))
+
+        p <-  p +
+          theme_bw() +
+          expand_limits(x=c(0,1), y=c(0,1)) +
+          guides(color='none') +
+          labs(x=DF$xlab[1],
+               y=DF$ylab[1])
+
+        p + theme(axis.text=element_text(size=12),
+                  axis.title=element_text(size=16))
+      }
+    }
+
+
+  }
+}
+
+makeVlab <- function(axis) {
+  if (axis$Var=='AAVY') {
+    if (axis$Metric=='Median') {
+      lab <- 'Median Inter-Annual Variability in Catch'
+    } else {
+      lab <- paste0('Probability Inter-Annual Variability in Catch <', axis$Reference*100, '%')
+    }
+
+  }
+  if (axis$Var=='AAVE') {
+    if (axis$Metric=='Median') {
+      lab <- 'Median Inter-Annual Variability in Effort'
+    } else {
+      lab <- paste0('Probability Inter-Annual Variability in Effort <', axis$Reference*100, '%')
     }
   }
+  lab
+}
+
+
+calcVar <- function(MSE, axis) {
+  Yrs <- seq(Current_Year+1, by=1, length.out=MSE@proyears)
+  pm <- get(axis$Var)(MSE, Yrs= match(axis$Year, Yrs))
+  median <- apply(pm@Stat, 2, median)
+  low <- apply(pm@Stat, 2, quantile, 0.25)
+  hi  <- apply(pm@Stat, 2, quantile, 0.75)
+  Prob <- apply(pm@Stat<axis$Reference, 2, mean)
+  metric <- axis$Metric
+
+  if (axis$Metric=='Median') {
+    val <- median
+    error_bars <- TRUE
+    lab <- makeVlab(axis)
+  }
+  if (axis$Metric=='Probability') {
+    val <- Prob
+    error_bars <- FALSE
+    lab <- makeVlab(axis)
+  }
+
+  data.frame(MP=MSE@MPs,
+             Median=median,
+             Low=low,
+             Hi=hi,
+             Prob=Prob,
+             Metric=metric,
+             val=val,
+             lab=lab,
+             error_bars=error_bars)
+
 }
 
 

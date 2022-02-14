@@ -58,7 +58,9 @@ fluidPage(style="position: absolute;  padding-left: 40px; padding-right: 40px;",
                                                           Results_UI('Results1'),
                                                           box_height='55px'),
                                          contentWidth=11) # end of tabsetpanel
-                 )
+                 ),
+                 # br(),
+                 # downloadButton("Download_Log","Download Log",style="height:28px")
 
           ), # end of main window for general
 
@@ -67,8 +69,8 @@ fluidPage(style="position: absolute;  padding-left: 40px; padding-right: 40px;",
 
           column(12,
                  br(),
-                 verbatimTextOutput("Log",placeholder=T),
-                 bsTooltip("Log","Application Log"),
+                 # verbatimTextOutput("Log",placeholder=T),
+                 # bsTooltip("Log","Application Log"),
                  downloadButton("Download_Log","Download Log",style="height:28px"),
                  hr()
           ),

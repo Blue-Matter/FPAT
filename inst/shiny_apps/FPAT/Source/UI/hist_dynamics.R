@@ -78,8 +78,8 @@ HistDynamics_Server <- function(id, Info, Toggles) {
                    title='Download OM Report',
                    p('An Operating Model Report with plots of all simulated fishery dynamics and
                                        parameters can be downloaded by clicking the button below.'),
-                   radioButtons(ns('filetype'), 'Report File Type',
-                                choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
+                   # radioButtons(ns('filetype'), 'Report File Type',
+                                # choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
                    downloadButton(ns('downloadOMRep'), 'Download OM Report'),
                    br()
                ),
@@ -167,23 +167,24 @@ HistDynamics_Server <- function(id, Info, Toggles) {
 
        output$downloadOMRep <- downloadHandler(
          filename = function() {
-           if (input$filetype == 'html') {
-             paste("OM_Report", Sys.Date(), ".html", sep="")
-           } else {
-             paste("OM_Report", Sys.Date(), ".pdf", sep="")
-           }
-
+           # if (input$filetype == 'html') {
+           #   paste("OM_Report", Sys.Date(), ".html", sep="")
+           # } else {
+           #   paste("OM_Report", Sys.Date(), ".pdf", sep="")
+           # }
+           paste("OM_Report", Sys.Date(), ".html", sep="")
          },
          content = function(file) {
            if(class(Info$MSEhist)=='Hist') {
-             if (input$filetype == 'html') {
-               output_format <- 'html_document'
-             } else {
-               output_format <- 'pdf_document'
-             }
+             output_format <- 'html_document'
+             # if (input$filetype == 'html') {
+             #   output_format <- 'html_document'
+             # } else {
+             #   output_format <- 'pdf_document'
+             # }
              AM("------------- Generating OM Report --------------")
-             AM(paste0("File type: ", input$filetype))
-             AM(paste0("output_format: ", output_format))
+             # AM(paste0("File type: ", input$filetype))
+             AM(paste0("output_format:C ", output_format))
              GenOMreport(Info$MSEhist, file, output_format)
            }
          }

@@ -85,8 +85,8 @@ FPI_Server <- function(id, Info, FPI_2) {
                box(width=3,status='primary', solidHeader = TRUE,
                    title='Download FPI Report',
                    p('The FPI plots can be downloaded in a FPI Report by clicking the button below.'),
-                   radioButtons(ns('filetype'), 'Report File Type',
-                                choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
+                   # radioButtons(ns('filetype'), 'Report File Type',
+                   #              choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
                    downloadButton(ns('downloadFPIRep'), 'Download FPI Report')
 
 
@@ -190,22 +190,24 @@ FPI_Server <- function(id, Info, FPI_2) {
 
        output$downloadFPIRep <- downloadHandler(
          filename = function() {
-           if (input$filetype == 'html') {
-             paste("FPI_Report", Sys.Date(), ".html", sep="")
-           } else {
-             paste("FPI_Report", Sys.Date(), ".pdf", sep="")
-           }
+           # if (input$filetype == 'html') {
+           #   paste("FPI_Report", Sys.Date(), ".html", sep="")
+           # } else {
+           #   paste("FPI_Report", Sys.Date(), ".pdf", sep="")
+           # }
+           paste("FPI_Report", Sys.Date(), ".html", sep="")
 
          },
          content = function(file) {
 
-           if (input$filetype == 'html') {
-             output_format <- 'html_document'
-           } else {
-             output_format <- 'pdf_document'
-           }
+           # if (input$filetype == 'html') {
+           #   output_format <- 'html_document'
+           # } else {
+           #   output_format <- 'pdf_document'
+           # }
+           output_format <- 'html_document'
            AM("------------- Generating FPI Report --------------")
-           AM(paste0("File type: ", input$filetype))
+           # AM(paste0("File type: ", input$filetype))
            AM(paste0("output_format: ", output_format))
 
            GenFPIreport(Info, input$baseline, BaseLine, FPI_2$Summary, file, output_format)
