@@ -304,10 +304,12 @@ Results_Server <- function(id,Info) {
                    if (nMPs>1) p <- 'plots'
                    if (nMPs==1) p <- 'plot'
                    if (input$Proj_Var=='Spawning Biomass') {
-                     if (input$SBopts=='SB0') {
-                       txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of spawning biomass relative to average unfished spawning biomass (SB0) for each MP.')
-                     } else {
-                       txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of spawning biomass relative to spawning biomass corresponding with maximum sustainable yield (SBMSY) for each MP.')
+                     if (length(input$SBopts)>0) {
+                       if (input$SBopts=='SB0') {
+                         txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of spawning biomass relative to average unfished spawning biomass (SB0) for each MP.')
+                       } else {
+                         txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of spawning biomass relative to spawning biomass corresponding with maximum sustainable yield (SBMSY) for each MP.')
+                       }
                      }
                    }
                    if (input$Proj_Var=='Catch') {
