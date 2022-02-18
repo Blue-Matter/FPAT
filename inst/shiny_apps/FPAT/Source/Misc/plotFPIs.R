@@ -93,7 +93,7 @@ radar_plot <- function(DF, title, n=25, vlcex=1, BaseLineDat=NULL, FPI_2DF=NULL)
 }
 
 output_dim_scores <- function(FPI.Summary, baseline, BaseLine, FPI_2=NULL, n=25, vlcex=1) {
-
+  FPI.Summary <<- FPI.Summary
   # baseline
   BaseLineDat <- NULL
   if (!is.null(baseline)) {

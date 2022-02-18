@@ -80,7 +80,6 @@ Results_Server <- function(id,Info) {
                    if(!is.null(Info$MSEhist)) {
                      Linf <- max(Info$MSEhist@SampPars$Stock$Linf) %>% round(0)
                      step <- 1
-
                      ns <- NS(id)
                      tagList(
                        bsCollapse(id = ns("collapse"),
@@ -100,6 +99,22 @@ Results_Server <- function(id,Info) {
                                                                          step=step),
                                                              p('Size limit is in the same units as length parameters specified in the FPAT input file.'),
                                                              actionButton(ns('submitSL'),
+                                                                          'Submit')
+                                                    ),
+                                                    tabPanel(h5('Custom Effort Limit'),
+                                                             value=1,
+                                                             br(),
+                                                             textInput(ns('Effname'),
+                                                                       'MP Name (no spaces)',
+                                                                       placeholder = 'Custom_Effort_Limit'),
+                                                             sliderInput(ns('eff'),
+                                                                         'Effort Limit',
+                                                                         min=0.05,
+                                                                         max=3,
+                                                                         value=0.5,
+                                                                         step=0.05),
+                                                             p('Effort limit is relative to the current fishig effort (e.g., a value of 0.5 means projected effort will be half the current level.)'),
+                                                             actionButton(ns('submitcustomE'),
                                                                           'Submit')
                                                     ),
                                                     tabPanel(h5('Advanced - Import MP'),
@@ -168,6 +183,19 @@ Results_Server <- function(id,Info) {
                  observeEvent(input$submitSL, {
                    mp <- makeSLMP(input$slval)
                    nm <- input$SLname
+                   nm <- gsub(" ", "_", nm)
+                   if (nchar(nm)>0) {
+                     assign(nm, mp, .GlobalEnv)
+                     Info$MPsel<-c(Info$MPsel, nm)
+                     Info$MPsel <- unique(Info$MPsel)
+                     AM(paste(c("Management strategies selected:", Info$MPsel),collapse= " "))
+                   }
+
+                 })
+
+                 observeEvent(input$submitcustomE, {
+                   mp <- makeEffortMP(input$eff)
+                   nm <- input$Effname
                    nm <- gsub(" ", "_", nm)
                    if (nchar(nm)>0) {
                      assign(nm, mp, .GlobalEnv)
@@ -301,6 +329,7 @@ Results_Server <- function(id,Info) {
                  output$Proj_text <- renderUI({
                    ns <- NS(id)
                    nMPs <- Info$MSEproj@nMPs
+                   txt <- ''
                    if (nMPs>1) p <- 'plots'
                    if (nMPs==1) p <- 'plot'
                    if (input$Proj_Var=='Spawning Biomass') {
@@ -315,7 +344,8 @@ Results_Server <- function(id,Info) {
                    if (input$Proj_Var=='Catch') {
                      txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of projected catch relative to catch in the most recent year for each MP.')
                    }
-                   tagList(p(txt))
+                   if (length(txt)>0)
+                     return(tagList(p(txt)))
                  })
 
                  output$TradeOff_plot <- renderPlot({
@@ -463,6 +493,16 @@ makeSLMP <- function(SL) {
     rec <- new("Rec")
     rec@LR5 <- SL*0.99
     rec@LFR <- SL
+    rec
+  }
+  class(mp) <- 'MP'
+  mp
+}
+
+makeEffortMP <- function(eff) {
+  mp <- function (x, Data, reps, ...)  {
+    rec <- new("Rec")
+    rec@Effort <- eff
     rec
   }
   class(mp) <- 'MP'

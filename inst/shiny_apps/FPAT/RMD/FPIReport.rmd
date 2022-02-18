@@ -5,6 +5,8 @@ params:
   input_baseline: na
   BaseLine: na
   FPI_2_Summary: na
+  comment_text: na
+  desc_text: na
 fig_width: 6 
 fig_height: 6
 ---
@@ -24,7 +26,8 @@ knitr::kable(makemetadata(params$Info$FPI.Cover))
 ## Outputs: Sector
 
 ```{r, results='asis'}
-cat(readLines('../Data/FPI_output_sector.txt'), sep = '\n')
+cat(params$desc_text$output, sep = '\n')
+
 ```
 
 
@@ -35,10 +38,19 @@ output_dim_scores(params$Info$Summary,
                   params$FPI_2_Summary)
 ```
 
+```{r, results='asis'}
+if (nchar(params$comment_text$output_sector)>0) {
+   cat('\n### Discussion Comments\n\n')
+  cat(params$comment_text$output_sector)
+}
+  
+```
+
+
 ## Outputs: Triple Bottom Line
 
 ```{r, results='asis'}
-cat(readLines('../Data/FPI_output_tpl.txt'), sep = '\n')
+cat(params$desc_text$output_tpl, sep = '\n')
 ```
 
 
@@ -50,10 +62,18 @@ output_scores_TBL(params$Info$Summary,
 ```
 
 
+```{r, results='asis'}
+if (nchar(params$comment_text$output_tbl)>0) {
+   cat('\n### Discussion Comments\n\n')
+  cat(params$comment_text$output_tbl)
+}
+  
+```
+
 ## Inputs: Enabling Conditions
 
 ```{r, results='asis'}
-cat(readLines('../Data/FPI_input_enabling.txt'), sep = '\n')
+cat(params$desc_text$input, sep = '\n')
 ```
 
 
@@ -64,4 +84,11 @@ input_dim_scores(params$Info$Summary,
                   params$FPI_2_Summary)
 ```
 
+```{r, results='asis'}
+if (nchar(params$comment_text$input)>0) {
+   cat('\n### Discussion Comments\n\n')
+  cat(params$comment_text$input)
+}
+  
+```
 
