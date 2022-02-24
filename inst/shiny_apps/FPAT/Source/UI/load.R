@@ -18,7 +18,7 @@ Load_UI <- function(id, label="Load") {
       box(width=4, height = 100, status='primary', solidHeader = TRUE,
           title="Load an FPAT Data File (.xlsx)",
           tipify(
-            fileInput(ns("Load"),label=NULL),
+            fileInput(ns("Load"),label=NULL, accept='.xlsx'),
             title="An FPAT spreadsheet contains FPI input and output scores, fishery data and additional questions for specifying an operating model")
       ),
       box(width=4, height = 100, status='primary', solidHeader = TRUE,
@@ -53,7 +53,6 @@ Load_Server <- function(id, Info, Toggles) {
         AM(Info$file)
         fetchOM(Info, Toggles, session)
       })
-
 
       observeEvent(input$Load, {
         Info$file <- input$Load
