@@ -5,10 +5,52 @@
 
 fetchOM<-function(Info, Toggles, session){
 
+  # import FPAT data file with error checks
+
+  # Check if loaded file is valid xlsx file
+  is.xlsx <- readxl::format_from_signature(Info$file$datapath) == 'xlsx'
+  if (is.na(is.xlsx)) is.xlsx <- FALSE
+  # not a valid xlsx file
+  if(!is.xlsx) {
+    e <- 'Loaded file is not a valid xlsx file (invalid signature). File may be corrupted'
+    AM(paste0(e,"\n"))
+    shinyalert("FPAT file did not import.", paste("Error:",e), type = "error")
+    AM(paste0(e,"\n"))
+    return(0)
+  }
+
+  # Load the file
   Info$sheets <- readxl::excel_sheets(Info$file$datapath)
+
+  # Attempt to load sheet 4. Summary
+
+  Load_Sheet(datapath, sheet) {
+    readxl::read_excel(datapath, sheet=sheet, .name_repair = 'minimal')
+  }
+
+
   Info$Summary <- readxl::read_excel(Info$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
+
+
+
+
   Info$Output_table <- readxl::read_excel(Info$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
-  Info$Data <- XL2Data(name=Info$file$datapath, sheet='12. Fishery Data')
+
+  tryCatch({
+    Info$Data <- XL2Data(name=Info$file$datapath, sheet='12. Fishery Data')
+  },
+
+  error = function(e){
+
+    AM(paste0(e,"\n"))
+    shinyalert("FPAT file did not import", paste("Error:",e), type = "error")
+    AM(paste0(e,"\n"))
+    return(0)
+
+  })
+
+
+
   Info$openMSE.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
   Info$FPI.Inputs <- readxl::read_excel(Info$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
   Info$FPI.Cover <- readxl::read_excel(Info$file$datapath, sheet='3. Cover Page', .name_repair = 'minimal')
