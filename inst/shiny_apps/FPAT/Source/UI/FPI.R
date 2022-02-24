@@ -18,7 +18,7 @@ FPI_Server <- function(id, Info, FPI_2) {
   moduleServer(id,
      function(input, output, session) {
 
-       output$checkloaded <- CheckLoaded(Info)
+       output$checkloaded <- CheckFPILoaded(Info)
 
        output$FPI_results <- renderUI({
          if(!is.null(Info$MSEhist)) {

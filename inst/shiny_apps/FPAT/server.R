@@ -6,12 +6,16 @@ options(shiny.maxRequestSize=1000*1024^2)
 server <- function(input, output, session) {
    # ---- Initialize Reactive Values -----
   Toggles <- reactiveValues(
-    Loaded=FALSE, # FPAT loaded?
+    FPI_Loaded=FALSE, # FPI loaded?
+    OM_Loaded=FALSE, # OM successfully generated?
     Fit=FALSE,    # Model fitted?
     MSE=FALSE)    # MSE run?
 
-  output$Loaded <- reactive({ Toggles$Loaded })
-  outputOptions(output, "Loaded", suspendWhenHidden = FALSE)
+  output$FPI_Loaded <- reactive({ Toggles$FPI_Loaded })
+  outputOptions(output, "FPI_Loaded", suspendWhenHidden = FALSE)
+
+  output$OM_Loaded <- reactive({ Toggles$OM_Loaded })
+  outputOptions(output, "OM_Loaded", suspendWhenHidden = FALSE)
 
   output$Fit <- reactive({ Toggles$Fit })
   outputOptions(output, "Fit", suspendWhenHidden = FALSE)
@@ -26,7 +30,7 @@ server <- function(input, output, session) {
     Output_table=NULL,  # FPI output-table
     Input_table=NULL,   # FPI input-table
     Data = NULL,        # Data
-    MERA.Qs = NULL,     # M
+    openMSE.Qs = NULL,     # M
     FPI.Inputs = NULL,  # FPI inputs table
     FPI.Cover = NULL,   # FPI cover sheet
     OM = NULL,          # Operating model

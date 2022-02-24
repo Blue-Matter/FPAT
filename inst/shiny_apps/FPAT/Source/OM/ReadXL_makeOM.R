@@ -22,67 +22,54 @@ fetchOM<-function(Info, Toggles, session){
   # Load the file
   Info$sheets <- readxl::excel_sheets(Info$file$datapath)
 
-  # Attempt to load sheet 4. Summary
+  # Check all required sheet names exist
+  req_sheets <- c('3. Cover Page', '4. Summary', '5. Output-table',
+                  '6. Input-table', '12. Fishery Data', '13. openMSE Questions')
 
-  Load_Sheet(datapath, sheet) {
-    readxl::read_excel(datapath, sheet=sheet, .name_repair = 'minimal')
+  missing_sheets <- req_sheets[!req_sheets %in% Info$sheets]
+
+  if (length(missing_sheets)>0) {
+    e <- paste('Loaded file is missing required sheet(s): ', paste(missing_sheets, collapse=", "))
+    AM(paste0(e,"\n"))
+    shinyalert("FPAT file did not import.", paste("Error:",e), type = "error")
+    AM(paste0(e,"\n"))
+    return(0)
   }
 
-
+  # Load FPI sheets
+  Info$FPI.Cover <- readxl::read_excel(Info$file$datapath, sheet='3. Cover Page', .name_repair = 'minimal')
   Info$Summary <- readxl::read_excel(Info$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
-
-
-
-
   Info$Output_table <- readxl::read_excel(Info$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
+  Info$FPI.Inputs <- readxl::read_excel(Info$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
 
-  tryCatch({
-    Info$Data <- XL2Data(name=Info$file$datapath, sheet='12. Fishery Data')
-  },
+  # Load openMSE sheets
+  Info$openMSE.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
 
-  error = function(e){
-
+  Info$Data <- try(XL2Data(name=Info$file$datapath, sheet='12. Fishery Data'), silent=TRUE)
+  if (class(Info$Data)=='try-error') {
+    e <- Info$Data
     AM(paste0(e,"\n"))
     shinyalert("FPAT file did not import", paste("Error:",e), type = "error")
     AM(paste0(e,"\n"))
     return(0)
+  }
 
-  })
-
-
-
-  Info$openMSE.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
-  Info$FPI.Inputs <- readxl::read_excel(Info$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
-  Info$FPI.Cover <- readxl::read_excel(Info$file$datapath, sheet='3. Cover Page', .name_repair = 'minimal')
+  # FPI part loaded successfully
+  Toggles$FPI_Loaded <- TRUE
 
   # make the operating model
-
-
-  tryCatch({
-
-    Info$OM<-makeOM(Info)
-    #saveRDS(Info$OM,"C:/temp/OM.rda") #
-    if(!is.null(Info$OM)){
-      withProgress(message = "Constructing operating model", value = 0, {
-        Info$MSEhist<-runMSE(Info$OM,Hist=T,extended=T)
-      })
-      Toggles$Loaded<-as.integer(!is.null(Info$OM))
-      updateVerticalTabsetPanel(session,'Main',selected=3)
-    }
-    #saveRDS(MSEhist,"C:/temp/MSEhist.rda") #
-    # runProj(Info)
-
-  },
-
-  error = function(e){
-
+  Info$OM<-try(makeOM(Info), silent=TRUE)
+  if (class(Info$OM)=='try-error') {
+    Toggles$OM_Loaded <- FALSE
+    e <- Info$OM
     AM(paste0(e,"\n"))
     shinyalert("FPAT did not build", paste("Error:",e), type = "error")
     AM(paste0(e,"\n"))
     return(0)
+  }
 
-  })
-
+  # OM successfully built
+  Toggles$OM_Loaded <- TRUE
 }
 
 
@@ -170,12 +157,10 @@ makeOM <- function(Info) {
   errlist<-asslist<-list()
 
   sheets <- Info$sheets
-  if (!'12. Fishery Data' %in% sheets) errlist$Datasheet <- "FPI+ is missing '12. Fishery Data' sheet"
-  if (!'13. openMSE Questions' %in% sheets) errlist$openMSEsheet <- "FPI+ is missing '13. openMSE Questions' sheet"
-  Data <- Info$Data #XL2Data(name=FPIfile, sheet='12. Fishery Data')
-  openMSE.Qs <- Info$openMSE.Qs #readxl::read_excel(FPIfile, sheet='13. openMSE Questions', .name_repair = 'minimal')
-  FPI.Inputs <<- Info$FPI.Inputs #readxl::read_excel(FPIfile, sheet='6. Input-table', .name_repair = 'minimal')
-  FPI.Cover <- Info$FPI.Cover #readxl::read_excel(FPIfile, sheet='3. Cover Page', .name_repair = 'minimal')
+  Data <- Info$Data
+  openMSE.Qs <- Info$openMSE.Qs
+  FPI.Inputs <- Info$FPI.Inputs
+  FPI.Cover <- Info$FPI.Cover
 
   plusgroup<-40
 
@@ -196,7 +181,7 @@ makeOM <- function(Info) {
   OM@Region<-Data@Region
   OM@Agency<-""
   Nyears<-max(Data@Year)-min(Data@Year)+1
-  if(Nyears < 15)errlist$Nyears<-paste("You have specfied only",Nyears, "years of fishery effort data (FPAt requires a minimum of 15 years). This should represent a complete picture of the history of the fishery.")
+  if(Nyears < 15)errlist$Nyears<-paste("You have specfied only",Nyears, "years of fishery effort data (FPAT requires a minimum of 15 years). This should represent a complete picture of the history of the fishery.")
   OM@nyears<-Nyears
 
   authors <- FPI.Cover[18,2:ncol(FPI.Cover)]
@@ -244,7 +229,7 @@ makeOM <- function(Info) {
   }
 
   if(is.na(Data@vbLinf)){
-    errlist$vbLinf<-"'Von Bertalantffy Linf parameter' not specified in sheet '12. Fishery Data'"
+    errlist$vbLinf<-"'von Bertalanffy Linf parameter' not specified in sheet '12. Fishery Data'"
   }else{
     OM@Linf<-rep(Data@vbLinf,2)
     if(is.na(Data@CV_vbLinf)){
@@ -256,7 +241,7 @@ makeOM <- function(Info) {
   }
 
   if(is.na(Data@vbK)){
-    errlist$vbK<-"'Von Bertalantffy K parameter' not specified in sheet '12. Fishery Data'"
+    errlist$vbK<-"'von Bertalanffy K parameter' not specified in sheet '12. Fishery Data'"
   }else{
     OM@K<-rep(Data@vbK,2)
     if(is.na(Data@CV_vbK)){
@@ -268,9 +253,9 @@ makeOM <- function(Info) {
   }
 
   if(is.na(Data@vbt0)){
-    asslist$t0<-"Theoretical age at length zero 'Von B. t0 parameter' not specified in sheet '12. Fishery Data'. A t0 value of 0 was assumed."
+    asslist$t0<-"Theoretical age at length zero 'von B. t0 parameter' not specified in sheet '12. Fishery Data'. A t0 value of 0 was assumed."
   }else{
-    if(Data@vbt0>0)errlist$t0pos<-("Theoretical age at length zero 'Von B. t0 parameter' is positive in sheet '12. Fishery Data'")
+    if(Data@vbt0>0)asslist$t0<-("Theoretical age at length zero 'von B. t0 parameter' is positive in sheet '12. Fishery Data. This generally means the growth model does not adequately describe mean length-at-age.'")
     OM@t0<-rep(Data@vbt0,2)
     if(is.na(Data@CV_vbt0)){
       asslist$CV_vbt0<-"Coefficient of variation in theoretical age at length zero 'CV von B. t0 parameter' not specified in sheet '12. Fishery Data'. A CV value of 0.1 was assumed."
@@ -327,8 +312,12 @@ makeOM <- function(Info) {
     OM@cpars$Perr<-rep(Data@sigmaR,nsim)
   }
 
+  if (any(is.na(Data@Effort))) {
+    errlist$Effort<-"Missing values in Effort specified in sheet '12. Fishery Data'. Effort values (relative or absolute) required for all years."
+  }
+
   trends<-matrix(Data@Effort,nrow=nsim,ncol=Nyears,byrow=T)
-  trends<-trends/apply(trends,1,mean)
+  trends<-trends/apply(trends,1,mean, na.rm=TRUE)
   nt<-dim(trends)[1]
   Esdmins<-c(0,0.2,0.5)
   Esdmaxes<-c(0.2,0.5,0.8)
@@ -365,8 +354,10 @@ makeOM <- function(Info) {
       OM@cpars$L5 <- trlnorm(nsim,Data@LFC,Data@CV_LFC)
     }
   }
-
-  if (is.na(Data@LFS)) {
+  if (is.na(Data@LFS) & !is.na(Data@LFC)) {
+    asslist$LFS<-"Length at full selection not specified in sheet '12. Fishery Data. Assuming knife-edge selectivity at Data@LFC'"
+    Data@LFS <- Data@LFC * 1.05
+  } else if (is.na(Data@LFS) & is.na(Data@LFC)) {
     errlist$LFS<-"Length at full selection not specified in sheet '12. Fishery Data'"
   }else{
     OM@LFS<-rep(Data@LFS,2)

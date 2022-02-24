@@ -31,15 +31,26 @@ for (fl in list.files("./Source/OM")) source(file.path("./Source/OM", fl),local=
 for (fl in list.files("./Source/Misc")) source(file.path("./Source/Misc", fl))
 
 
-CheckLoaded <- function(Info) {
+CheckFPILoaded <- function(Info) {
   renderUI({
     if(is.null(Info$file))
       return(h4('FPAT data file not loaded. Please return to Load and load an FPAT data file', style = "color:red"))
-    if(!is.null(Info$file) & is.null(Info$MSEhist))
-      return(h4('Simulations are still running. Please wait...', style = "color:red"))
+    if(class(Info$Data)!='Data')
+      return(h4('FPAT data file not loaded. Please return to Load and load an FPAT data file', style = "color:red"))
+
   })
 }
 
+CheckOMLoaded <- function(Info) {
+  renderUI({
+    if(is.null(Info$file))
+      return(h4('FPAT data file not loaded. Please return to Load and load an FPAT data file', style = "color:red"))
+    if(class(Info$Data)!='Data')
+      return(h4('FPAT data file not loaded. Please return to Load and load an FPAT data file', style = "color:red"))
+    if(is.null(Info$MSEhist))
+      return(h4('Operating model could not be built from this FPAT file.', style = "color:red"))
+  })
+}
 
 # Shared variables
 
