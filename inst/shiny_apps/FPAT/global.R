@@ -33,7 +33,7 @@ for (fl in list.files("./Source/Misc")) source(file.path("./Source/Misc", fl))
 
 CheckFPILoaded <- function(Info) {
   renderUI({
-    if(is.null(Info$file))
+    if(is.null(Info$sheets))
       return(h4('FPAT data file not loaded. Please return to Load and load an FPAT data file', style = "color:red"))
   })
 }
