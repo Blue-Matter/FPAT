@@ -4,6 +4,19 @@
 #  mera<-readRDS("G:/Shared drives/BM shared/1. Projects/MERA/MERA_TESTS_2021/TFH/Tiger_flathead.mera")
 
 fetchOM<-function(Info, Toggles, session){
+  # reset Info
+  Info$sheets=NULL       # Sheet names
+  Info$Summary=NULL       # FPI summary tab
+  Info$Output_table=NULL  # FPI output-table
+  Info$Input_table=NULL   # FPI input-table
+  Info$Data = NULL        # Data
+  Info$openMSE.Qs = NULL     # M
+  Info$FPI.Inputs = NULL  # FPI inputs table
+  Info$FPI.Cover = NULL   # FPI cover sheet
+  Info$OM = NULL          # Operating model
+  Info$MSEhist = NULL     # Historical reconstruction
+  Info$MSEproj = NULL     # MSE projection
+  Info$MPsel = c("CurC","curEref")        # Selected MPs for running the MSE
 
   # import FPAT data file with error checks
 
