@@ -35,9 +35,6 @@ CheckFPILoaded <- function(Info) {
   renderUI({
     if(is.null(Info$file))
       return(h4('FPAT data file not loaded. Please return to Load and load an FPAT data file', style = "color:red"))
-    if(class(Info$Data)!='Data')
-      return(h4('FPAT data file not loaded. Please return to Load and load an FPAT data file', style = "color:red"))
-
   })
 }
 

@@ -19,7 +19,7 @@ Results_Server <- function(id,Info) {
   moduleServer(id,
                function(input, output, session) {
 
-                 output$checkloaded <- CheckLoaded(Info)
+                 output$checkloaded <- CheckOMLoaded(Info)
 
                  output$MSE_results <- renderUI({
                    if(!is.null(Info$MSEhist)) {

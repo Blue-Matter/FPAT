@@ -21,7 +21,7 @@ FPI_Server <- function(id, Info, FPI_2) {
        output$checkloaded <- CheckFPILoaded(Info)
 
        output$FPI_results <- renderUI({
-         if(!is.null(Info$MSEhist)) {
+         if(!is.null(Info$FPI.Cover)) {
            ns <- NS(id)
            tagList(
              fluidRow(

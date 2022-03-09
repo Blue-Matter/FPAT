@@ -20,7 +20,7 @@ HistDynamics_Server <- function(id, Info, Toggles) {
   moduleServer(id,
      function(input, output, session) {
 
-       output$checkloaded <- CheckLoaded(Info)
+       output$checkloaded <- CheckOMLoaded(Info)
 
        output$Hist_dynamics <- renderUI({
          if(!is.null(Info$MSEhist)) {

@@ -42,34 +42,47 @@ fetchOM<-function(Info, Toggles, session){
   Info$Output_table <- readxl::read_excel(Info$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
   Info$FPI.Inputs <- readxl::read_excel(Info$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
 
-  # Load openMSE sheets
-  Info$openMSE.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
-
-  Info$Data <- try(XL2Data(name=Info$file$datapath, sheet='12. Fishery Data'), silent=TRUE)
-  if (class(Info$Data)=='try-error') {
-    e <- Info$Data
-    AM(paste0(e,"\n"))
-    shinyalert("FPAT file did not import", paste("Error:",e), type = "error")
-    AM(paste0(e,"\n"))
-    return(0)
-  }
+  # Info$Summary
+  # output_dim_scores(FPI.Summary, NULL)
 
   # FPI part loaded successfully
   Toggles$FPI_Loaded <- TRUE
 
-  # make the operating model
-  Info$OM<-try(makeOM(Info), silent=TRUE)
-  if (class(Info$OM)=='try-error') {
-    Toggles$OM_Loaded <- FALSE
-    e <- Info$OM
+  # Load openMSE sheets
+  Info$openMSE.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
+
+  Info$Data <- try(XL2Data(name=Info$file$datapath, sheet='12. Fishery Data'), silent=TRUE)
+
+  if (class(Info$Data)=='try-error') {
+    e <- paste("Could not import fishery data from Sheet 12. Fishery Data.", sep='\n', Info$Data)
     AM(paste0(e,"\n"))
-    shinyalert("FPAT did not build", paste("Error:",e), type = "error")
+    shinyalert("The FPI information was imported but the operating model could not be generated:", paste("Error:",e), type = "error")
     AM(paste0(e,"\n"))
     return(0)
-  }
+  } else {
+    # make the operating model
+    Info$OM<-try(makeOM(Info), silent=TRUE)
 
-  # OM successfully built
-  Toggles$OM_Loaded <- TRUE
+    if (class(Info$OM)=='OM') {
+      # OM successfully loaded
+      # construct the operating model
+      withProgress(message = "Constructing operating model", value = 0, {
+        MSEhist<-try(runMSE(Info$OM,Hist=T,extended=T),  silent=TRUE)
+      })
+
+      if (class(MSEhist)=='try-error') {
+        e <- MSEhist
+        AM(paste0(e,"\n"))
+        shinyalert("Operating Model could not be generated:", paste("Error:",e), type = "error")
+        AM(paste0(e,"\n"))
+        return(0)
+      } else {
+        Info$MSEhist <- MSEhist
+        Toggles$OM_Loaded <- TRUE
+      }
+
+    }
+  }
 }
 
 
@@ -502,8 +515,8 @@ makeOM <- function(Info) {
 
 
   if(length(errlist)!=0){
-    shinyalert(title="The FPAT excel file was not loaded", text=paste(unlist(errlist),collapse="\n\n"), type="error")
-    AM("--- Load Errors ----------------")
+    shinyalert(title="The FPI information was imported but the operating model could not be generated:", text=paste(unlist(errlist),collapse="\n\n"), type="error")
+    AM("--- OM Build Errors ----------------")
     AM(paste(unlist(errlist),collapse="\n"))
     OM<-NULL
   }else{

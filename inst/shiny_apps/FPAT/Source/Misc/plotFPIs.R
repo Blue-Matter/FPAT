@@ -105,15 +105,15 @@ output_dim_scores <- function(FPI.Summary, baseline, BaseLine, FPI_2=NULL, n=25,
   }
 
   # FPI scores
-  first <- which(FPI.Summary[,1] == "INDICATOR")[1] +1
-  last <- which(FPI.Summary[,2]=='Processing Workers')
+  first <- 7 # which(FPI.Summary[,1] == "INDICATOR")[1] +1
+  last <- 17 # which(FPI.Summary[,2]=='Processing Workers')
   DF <- FPI.Summary[first:last, 1:3]
   colnames(DF) <- c('a', 'b', 'c')
 
   FPI_2DF <- NULL
   if (!is.null(FPI_2)) {
-    first <- which(FPI_2[,1] == "INDICATOR")[1] +1
-    last <- which(FPI_2[,2]=='Processing Workers')
+    first <- 7 #which(FPI_2[,1] == "INDICATOR")[1] +1
+    last <- 17 #which(FPI_2[,2]=='Processing Workers')
     FPI_2DF <- FPI_2[first:last, 1:3]
     colnames(FPI_2DF) <- c('a', 'b', 'c')
   }
@@ -133,15 +133,15 @@ input_dim_scores <- function(FPI.Summary, baseline, BaseLine, FPI_2=NULL, n=25, 
     colnames(BaseLineDat) <- baseline
   }
 
-  first <- which(FPI.Summary[,1] == "COMPONENT")[1] +1
-  last <- which(FPI.Summary[,2]=='Infrastructure')
+  first <- 23 # which(FPI.Summary[,1] == "COMPONENT")[1] +1
+  last <- 37 #which(FPI.Summary[,2]=='Infrastructure')
   DF <- FPI.Summary[first:last, 1:3]
   colnames(DF) <- c('a', 'b', 'c')
 
   FPI_2DF <- NULL
   if (!is.null(FPI_2)) {
-    first <- which(FPI_2[,1] == "COMPONENT")[1] +1
-    last <- which(FPI_2[,2]=='Infrastructure')
+    first <- 23 #which(FPI_2[,1] == "COMPONENT")[1] +1
+    last <- 37 #which(FPI_2[,2]=='Infrastructure')
     FPI_2DF <- FPI_2[first:last, 1:3]
     colnames(FPI_2DF) <- c('a', 'b', 'c')
   }
@@ -159,15 +159,15 @@ output_scores_TBL <- function(FPI.Summary, baseline, BaseLine, FPI_2=NULL, n=25,
     colnames(BaseLineDat) <- baseline
   }
 
-  first <- which(FPI.Summary[,1] == "INDICATOR")[2] +1
-  last <- which(FPI.Summary[,2]=='Career')
+  first <- 42 #which(FPI.Summary[,1] == "INDICATOR")[2] +1
+  last <- 55 # which(FPI.Summary[,2]=='Career')
   DF <- FPI.Summary[first:last, 1:3]
   colnames(DF) <- c('a', 'b', 'c')
 
   FPI_2DF <- NULL
   if (!is.null(FPI_2)) {
-    first <- which(FPI_2[,1] == "INDICATOR")[2] +1
-    last <- which(FPI_2[,2]=='Career')
+    first <- 42 #which(FPI_2[,1] == "INDICATOR")[2] +1
+    last <- 55 #which(FPI_2[,2]=='Career')
     FPI_2DF <- FPI_2[first:last, 1:3]
     colnames(FPI_2DF) <- c('a', 'b', 'c')
   }
