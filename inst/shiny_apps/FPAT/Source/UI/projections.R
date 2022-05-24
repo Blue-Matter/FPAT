@@ -394,7 +394,8 @@ Results_Server <- function(id,Info) {
                                    min = Yr1,
                                    max = Yr2,
                                    value = c(Yr1, Yr2),
-                                   step=1),
+                                   step=1,
+                                   sep=''),
                        selectInput(ns('x_metric'),
                                    label = 'Metric',
                                    choices = c('Median', 'Probability'))
@@ -439,7 +440,8 @@ Results_Server <- function(id,Info) {
                                    min = Yr1,
                                    max = Yr2,
                                    value = c(Yr1, Yr2),
-                                   step=1),
+                                   step=1,
+                                   sep=''),
                        selectInput(ns('y_metric'),
                                    label = 'Metric',
                                    choices = c('Median', 'Probability'))

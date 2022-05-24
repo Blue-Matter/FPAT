@@ -35,39 +35,19 @@ fetchOM<-function(Info, Toggles, session){
   # Load the file
   Info$sheets <- readxl::excel_sheets(Info$file$datapath)
 
-  # Check all required sheet names exist
-  req_sheets <- c('3. Cover Page', '4. Summary', '5. Output-table',
-                  '6. Input-table', '12. Fishery Data', '13. openMSE Questions')
-
-  missing_sheets <- req_sheets[!req_sheets %in% Info$sheets]
-
-  if (length(missing_sheets)>0) {
-    e <- paste('Loaded file is missing required sheet(s): ', paste(missing_sheets, collapse=", "))
-    AM(paste0(e,"\n"))
-    shinyalert("FPAT file did not import.", paste("Error:",e), type = "error")
-    AM(paste0(e,"\n"))
-    return(0)
-  }
-
-  # Load FPI sheets
-  Info$FPI.Cover <- readxl::read_excel(Info$file$datapath, sheet='3. Cover Page', .name_repair = 'minimal')
-  Info$Summary <- readxl::read_excel(Info$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
-  Info$Output_table <- readxl::read_excel(Info$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
-  Info$FPI.Inputs <- readxl::read_excel(Info$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
+  Info <- Check_Sheets(Info)
 
   # Info$Summary
   # output_dim_scores(FPI.Summary, NULL)
 
+
   # FPI part loaded successfully
   Toggles$FPI_Loaded <- TRUE
 
-  # Load openMSE sheets
-  Info$openMSE.Qs <- readxl::read_excel(Info$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
 
-  Info$Data <- try(XL2Data(name=Info$file$datapath, sheet='12. Fishery Data'), silent=TRUE)
 
   if (class(Info$Data)=='try-error') {
-    e <- paste("Could not import fishery data from Sheet 12. Fishery Data.", sep='\n', Info$Data)
+    e <- paste("Could not import fishery data from Sheet", Info$Sheet_Names$Fishery_Data,".", sep='\n', Info$Data)
     AM(paste0(e,"\n"))
     shinyalert("The FPI information was imported but the operating model could not be generated:", paste("Error:",e), type = "error")
     AM(paste0(e,"\n"))

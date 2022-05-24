@@ -260,18 +260,14 @@ FPI_Server <- function(id, Info, FPI_2) {
          load_sheets <- try(readxl::excel_sheets(FPI_2$file$datapath), silent=TRUE)
          if (class(load_sheets)!='try-error') {
            FPI_2$sheets <- load_sheets
+
            if (!'4. Summary' %in% FPI_2$sheets) {
              FPI_2$Summary <- NULL
              AM("------------- Loaded file is not a valid FPI data file --------------")
              AM(paste0("File: ",   FPI_2$file))
              shinyalert("Loaded file is not a valid FPI data file", type = "error")
            } else {
-             FPI_2$Summary <- readxl::read_excel(FPI_2$file$datapath, sheet='4. Summary', .name_repair = 'minimal')
-             FPI_2$Output_table <- readxl::read_excel(FPI_2$file$datapath, sheet='5. Output-table', .name_repair = 'minimal')
-             FPI_2$Data <- XL2Data(name=FPI_2$file$datapath, sheet='12. Fishery Data')
-             FPI_2$openMSE.Qs <- readxl::read_excel(FPI_2$file$datapath, sheet='13. openMSE Questions', .name_repair = 'minimal')
-             FPI_2$FPI.Inputs <- readxl::read_excel(FPI_2$file$datapath, sheet='6. Input-table', .name_repair = 'minimal')
-             FPI_2$FPI.Cover <- readxl::read_excel(FPI_2$file$datapath, sheet='3. Cover Page', .name_repair = 'minimal')
+             FPI_2 <- Check_Sheets(FPI_2)
              AM("------------- Comparision FPI loaded --------------")
              AM(paste0("File: ",   FPI_2$file))
            }

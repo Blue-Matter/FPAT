@@ -111,4 +111,81 @@ Close_Planned <- function(x, Data, ...) {
 class(Close_Planned) <- 'MP'
 
 
+Check_Sheets <- function(Info) {
+  # Check all required sheet names exist
+  req_sheets <- c('Cover Page', 'Summary', 'Output-table',
+                  'Input-table', 'Fishery Data', 'FPAT App Questions', 'Effort Dynamics')
+
+  sheet_df <- data.frame(Sheet=req_sheets, Number=NA)
+  for (i in 1:length(req_sheets)) {
+    ind <- which(grepl(req_sheets[i], Info$sheets)==TRUE)
+    if (length(ind)!=0) {
+      sheet_df$Number[i] <- ind
+    }
+  }
+
+  # Error on missing (Effort Dynamics is optional)
+  sheet_df_chk <- sheet_df %>% dplyr::filter(Sheet !='Effort Dynamics')
+  ind <- sheet_df_chk$Number %>% is.na() %>% which()
+
+  missing_sheets <- numeric()
+  if (length(ind)>0) {
+    missing_sheets <- sheet_df_chk[ind,1]
+  }
+
+  if (length(missing_sheets)>0) {
+    e <- paste('Loaded file is missing required sheet(s): ', paste(missing_sheets, collapse=", "))
+    AM(paste0(e,"\n"))
+    shinyalert("FPAT file did not import.", paste("Error:",e), type = "error")
+    AM(paste0(e,"\n"))
+    return(0)
+  }
+
+  sheet_df$Sheet_Name <- NA
+  for (i in 1:nrow(sheet_df)) {
+    sheet_df$Sheet_Name[i] <- paste0(sheet_df$Number[i], ". ", sheet_df$Sheet[i])
+  }
+
+  get_name <- function(sheet, sheet_df) {
+    ind <- which(grepl(sheet, sheet_df$Sheet))
+    sheet_df$Sheet_Name[ind]
+  }
+
+  # Get sheet numbers
+  Cover_Page <- get_name('Cover Page', sheet_df)
+  Summary <- get_name('Summary', sheet_df)
+  Output_table <- get_name('Output-table', sheet_df)
+  Input_table <- get_name('Input-table', sheet_df)
+  FPAT_App_Questions <- get_name('FPAT App Questions', sheet_df)
+  Fishery_Data <- get_name('Fishery Data', sheet_df)
+  Effort_Dynamics<- get_name('Effort Dynamics', sheet_df)
+
+  Info$Sheet_Names <- list()
+  Info$Sheet_Names$Cover_Page <- Cover_Page
+  Info$Sheet_Names$Summary <- Summary
+  Info$Sheet_Names$Output_table <- Output_table
+  Info$Sheet_Names$Input_table <- Input_table
+  Info$Sheet_Names$FPAT_App_Questions <- FPAT_App_Questions
+  Info$Sheet_Names$Fishery_Data <- Fishery_Data
+  Info$Sheet_Names$Effort_Dynamics <- Effort_Dynamics
+
+
+  # Load FPI sheets
+  Info$FPI.Cover <- readxl::read_excel(Info$file$datapath, sheet=Cover_Page, .name_repair = 'minimal')
+  Info$Summary <- readxl::read_excel(Info$file$datapath, sheet=Summary, .name_repair = 'minimal')
+  Info$Output_table <- readxl::read_excel(Info$file$datapath, sheet=Output_table, .name_repair = 'minimal')
+  Info$FPI.Inputs <- readxl::read_excel(Info$file$datapath, sheet=Input_table, .name_repair = 'minimal')
+  if (!grepl('NA', Effort_Dynamics)) {
+    Info$Effort_Dynamics <- readxl::read_excel(Info$file$datapath, sheet=Effort_Dynamics, .name_repair = 'minimal')
+  }
+
+  # Load openMSE sheets
+  Info$openMSE.Qs <- readxl::read_excel(Info$file$datapath, sheet=FPAT_App_Questions, .name_repair = 'minimal')
+
+  Info$Data <- try(XL2Data(name=Info$file$datapath, sheet=Fishery_Data), silent=TRUE)
+
+  Info
+}
+
+
 
