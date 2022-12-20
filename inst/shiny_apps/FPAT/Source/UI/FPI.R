@@ -152,9 +152,25 @@ FPI_Server <- function(id, Info, FPI_2) {
 
        output$output_table <- DT::renderDataTable({
          DF <- makeoutputDF(Info$Summary, Info$Output_table)
-         DF[DF$Dimension%in% input$output_dimension,1:2]
+         DF <-  DF[DF$Dimension%in% input$output_dimension,1:2]
+
+         if (!is.null(FPI_2$Summary)) {
+           DF_2 <- makeoutputDF(FPI_2$Summary, Info$Output_table)
+           DF_2 <-  DF_2[DF_2$Dimension%in% input$output_dimension,1:2]
+           DF <- data.frame(Measure=DF[,1], Fishery=DF[,2], Comparison=DF_2[,2])
+         }
+
+         # Add description
+         l <- length(DF$Measure) - 1
+         ind <- match(DF$Measure[1:l], IndDesc$Metric)
+         desc <- c(IndDesc$Description[ind], '')
+         DF$Description <- desc
+
+         DF
 
        }, escape=FALSE, options = list(dom = 't', pageLength=40), rownames= FALSE)
+
+
 
 
        output$output_tbl_tableui <- renderUI({

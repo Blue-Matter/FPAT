@@ -13,32 +13,53 @@ MakeDF <- function(MSE) {
   nsim <- MSE@nsim
   nyears <- MSE@nyears
   proyears <- MSE@proyears
-  Years <- seq(Current_Year+1, Current_Year+proyears)
+  Years <- Current_Year:(Current_Year+proyears)
 
-  SB0 <- MSE@RefPoint$ByYear$SSB0[,(nyears+1):(nyears+proyears)]
+  SB0 <- MSE@RefPoint$ByYear$SSB0[,(nyears):(nyears+proyears)]
   SB0 <- replicate(nMPs, SB0) %>% aperm(c(1,3,2))
 
-  SBMSY <- MSE@RefPoint$ByYear$SSBMSY[,(nyears+1):(nyears+proyears)]
+  SBMSY <- MSE@RefPoint$ByYear$SSBMSY[,(nyears):(nyears+proyears)]
   SBMSY <- replicate(nMPs, SBMSY) %>% aperm(c(1,3,2))
 
   HistCatch <- apply(MSE@Hist@TSdata$Landings, 1:2, sum)
   LastCatch <- replicate(nMPs,HistCatch[,nyears])
-  LastCatch <- replicate(proyears, LastCatch)
 
   HistRemovals <- apply(MSE@Hist@TSdata$Removals, 1:2, sum)
   LastRemovals <- replicate(nMPs,HistRemovals[,nyears])
-  LastRemovals <- replicate(proyears, LastRemovals)
+
+  SB_hist <- apply(MSE@Hist@TSdata$SBiomass, 1:2, sum)
+  SB_hist <- SB_hist[,nyears]
+  SB_hist <- replicate(nMPs, SB_hist)
+
+  SSB_proj <- MSE@SSB
+  SSB <- abind::abind(SB_hist, SSB_proj, along=3)
+
+
+  R0 <- MSE@Hist@SampPars$Stock$R0
+  Rec_proj <- apply(MSE@Misc$extended$N[,1,,nyears:(nyears+proyears),], c(1,2,3), sum)
+
+
+  Catch_proj <- MSE@Catch
+  Catch  <- abind::abind(LastCatch, Catch_proj, along=3)
+
+  Removals_proj <- MSE@Removals
+  Removals  <- abind::abind(LastRemovals, Removals_proj, along=3)
+
+  LastCatch <- replicate(proyears+1, LastCatch)
+  LastRemovals <- replicate(proyears+1, LastRemovals)
+
 
   df <- data.frame(Sim=1:nsim,
                    MP=rep(MSE@MPs, each=nsim),
                    Year=rep(Years,each=nMPs*nsim),
-                   SB=as.vector(MSE@SSB),
+                   SB=as.vector(SSB),
                    SB0=as.vector(SB0),
                    SBMSY=as.vector(SBMSY),
-                   Catch=as.vector(MSE@Catch),
+                   Catch=as.vector(Catch),
                    LastCatch=as.vector(LastCatch),
-                   Removals=as.vector(MSE@Removals),
-                   LastRemovals=as.vector(LastRemovals))
+                   Removals=as.vector(Removals),
+                   LastRemovals=as.vector(LastRemovals),
+                   Recruitment=as.vector(Rec_proj/R0))
   df <- df %>%
     mutate(SB_SB0=SB/SB0,
            SB_SBMSY=SB/SBMSY,
@@ -59,7 +80,10 @@ MakeDF <- function(MSE) {
 }
 
 # --- Projection Plot ----
-Projection_plot <- function(MSE, Var=NULL, opt=NULL) {
+Projection_plot <- function(MSE, Var=NULL, opt=NULL, quant1=80) {
+
+  quant2 <- (100 - quant1)/100
+  quant1 <- quant1/100
 
   MSE <<- MSE
   Var <<- Var
@@ -97,20 +121,32 @@ Projection_plot <- function(MSE, Var=NULL, opt=NULL) {
         tidyr::pivot_longer(cols=all_of(cols))
     }
 
-    ggplot(DF, aes(x=Year, y=value, color=name, fill=name)) +
+    if (Var =='Recruitment') {
+      ylab <- 'Relative Recruitment'
+      cols <- 4
+      DF <- df %>% select(Sim, MP, Year, all_of(var)) %>%
+        tidyr::pivot_longer(cols=all_of(cols))
+    }
+
+    # Calc quantiles
+    DFsum <- DF %>% group_by(Year, MP) %>%
+      summarise(Median=median(value),
+                Lower=quantile(value, quant2),
+                Upper=quantile(value, quant1))
+
+    ggplot(DFsum, aes(x=Year)) +
       facet_wrap(~MP, ncol=3) +
       geom_hline(yintercept = c(0.5, 1), linetype=2, color='gray') +
-      geom_smooth(stat = 'summary', alpha = 0.2,
-                  fun.data = median_hilow, fun.args = list(conf.int = 0.5)) +
+      geom_ribbon(aes(ymin=Lower, ymax=Upper), fill='blue', alpha=0.2) +
+      geom_line(aes(y=Median), size=1.2, color='blue')+
       expand_limits(y=c(0,1)) +
       theme_classic() +
-      scale_color_manual(values=c('blue', 'darkblue')) +
-      scale_fill_manual(values=c('blue', 'darkblue')) +
       guides(color='none', fill='none') +
-      labs(x='Projection Year', y=ylab, color='', fill='') +
+      labs(x='Year', y=ylab, color='', fill='') +
       theme(axis.text=element_text(size=12),
             axis.title=element_text(size=16),
             strip.text = element_text(size=12))
+
 
   }
 }

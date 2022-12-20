@@ -162,6 +162,8 @@ makeOM <- function(Info) {
   AM("--- Loading FPAT spreadsheet ----------------")
   errlist<-asslist<-list()
 
+
+  set.seed(1001)
   sheets <- Info$sheets
   Data <- Info$Data
   openMSE.Qs <- Info$openMSE.Qs
@@ -171,16 +173,21 @@ makeOM <- function(Info) {
   plusgroup<-40
 
   OM<-LowSlopes(MSEtool::testOM)
+  OM@qcv <- c(0,0)
+  OM@AC <- c(0.05,0.1)
+
   OM@nsim<-nsim<- 24
   OM@interval<-4
   OM@proyears<-30
   OM@seed<-1
+
 
   OM@R0<-1e9
   OM@Linf<-c(100,100)
   OM@L50<-NaN
   OM@K<-NaN
   OM@isRel<-"FALSE"
+  OM@maxF <- 5
 
   OM@Name<-Data@Common_Name
   OM@Species<-Data@Species

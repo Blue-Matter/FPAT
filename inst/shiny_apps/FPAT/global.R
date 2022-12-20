@@ -111,6 +111,11 @@ Close_Planned <- function(x, Data, ...) {
 class(Close_Planned) <- 'MP'
 
 
+Current_Catch <- CurC
+
+Current_Effort <- curE
+
+
 Check_Sheets <- function(Info) {
   # Check all required sheet names exist
   req_sheets <- c('Cover Page', 'Summary', 'Output-table',
@@ -188,4 +193,7 @@ Check_Sheets <- function(Info) {
 }
 
 
-
+# Load indicator descriptions
+IndDesc <- read.csv('Data/Indicator_Descriptions.csv')
+IndDesc$Metric <- trimws(IndDesc$Metric)
+IndDesc <<- IndDesc

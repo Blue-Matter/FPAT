@@ -36,7 +36,7 @@ server <- function(input, output, session) {
     OM = NULL,          # Operating model
     MSEhist = NULL,     # Historical reconstruction
     MSEproj = NULL,     # MSE projection
-    MPsel = c("CurC","curEref")        # Selected MPs for running the MSE
+    MPsel = c("Current_Catch","Current_Effort")        # Selected MPs for running the MSE
   )
 
   # FPI comparision

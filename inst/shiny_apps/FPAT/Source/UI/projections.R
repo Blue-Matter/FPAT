@@ -47,9 +47,10 @@ Results_Server <- function(id,Info) {
                                                        choiceValues=c("SQ","Size","LB","IB", "Spatial"),selected=c("SQ")),
                                     htmlOutput(ns('customMPs')),
                                     htmlOutput(ns('selectedMPs')),
+                                    actionButton(ns('reset_defaults'), 'Reset Default MPs'),
                                     br(),
-                                    p('Select the management procedures you wish to test and run the MSE projections.'),
-
+                                    br(),
+                                    h5('Select the management procedures you wish to test and run the MSE projections.'),
                                     actionButton(ns("runMSE"),label="Run MSE Projections",icon=icon('cogs')),
                                     htmlOutput(ns('DownloadMSE'))
                              )
@@ -65,6 +66,7 @@ Results_Server <- function(id,Info) {
                    }
                  })
 
+
                  output$selectedMPs <- renderUI({
                    if (length(Info$MPsel)>0) {
                      mps <- Info$MPsel
@@ -73,6 +75,17 @@ Results_Server <- function(id,Info) {
                        selectInput(ns('MPselect'), 'Selected MPs:', choices=mps, selected=mps, multiple = TRUE)
                      )
                    }
+
+                 })
+
+                 observeEvent(input$reset_defaults, {
+                   Info$MPsel <- c("Current_Catch","Current_Effort")
+                   updateCheckboxGroupInput(session, inputId='MPset',
+                                            label="Select Management Procedures 2 ",
+                                            choiceNames=c("Status Quo Catch and Effort","Size limits","Length-based",
+                                                          "Index-based", "Spatial Management"),
+                                            choiceValues=c("SQ","Size","LB","IB", "Spatial"),selected=c("SQ"))
+                   updateSelectInput(session, inputId='MPselect', selected=Info$MPsel)
 
                  })
 
@@ -101,20 +114,36 @@ Results_Server <- function(id,Info) {
                                                              actionButton(ns('submitSL'),
                                                                           'Submit')
                                                     ),
-                                                    tabPanel(h5('Custom Effort Limit'),
+                                                    tabPanel(h5('Custom Constant Effort Limit'),
                                                              value=1,
                                                              br(),
                                                              textInput(ns('Effname'),
                                                                        'MP Name (no spaces)',
                                                                        placeholder = 'Custom_Effort_Limit'),
                                                              sliderInput(ns('eff'),
-                                                                         'Effort Limit',
+                                                                         "Effort Limit",
                                                                          min=0.05,
                                                                          max=3,
                                                                          value=0.5,
                                                                          step=0.05),
-                                                             p('Effort limit is relative to the current fishig effort (e.g., a value of 0.5 means projected effort will be half the current level.)'),
+                                                             p('Effort limit is relative to the current fishing effort (e.g., a value of 0.5 means projected effort will be half the current level.)'),
                                                              actionButton(ns('submitcustomE'),
+                                                                          'Submit')
+                                                    ),
+                                                    tabPanel(h5('Custom Constant Catch Limit'),
+                                                             value=1,
+                                                             br(),
+                                                             textInput(ns('TACname'),
+                                                                       'MP Name (no spaces)',
+                                                                       placeholder = 'Custom_Catch_Limit'),
+                                                             sliderInput(ns('catch'),
+                                                                         "Catch Limit",
+                                                                         min=0.05,
+                                                                         max=3,
+                                                                         value=0.5,
+                                                                         step=0.05),
+                                                             p('Catch limit is relative to the current catch (e.g., a value of 0.5 means projected catch will be half the current level.)'),
+                                                             actionButton(ns('submitcustomC'),
                                                                           'Submit')
                                                     ),
                                                     tabPanel(h5('Advanced - Import MP'),
@@ -206,6 +235,19 @@ Results_Server <- function(id,Info) {
 
                  })
 
+                 observeEvent(input$submitcustomC, {
+                   mp <- makeTACMP(input$catch)
+                   nm <- input$TACname
+                   nm <- gsub(" ", "_", nm)
+                   if (nchar(nm)>0) {
+                     assign(nm, mp, .GlobalEnv)
+                     Info$MPsel<-c(Info$MPsel, nm)
+                     Info$MPsel <- unique(Info$MPsel)
+                     AM(paste(c("Management strategies selected:", Info$MPsel),collapse= " "))
+                   }
+
+                 })
+
                  observeEvent(input$MPset,{
                    MPs<-list(
                      SQ=c("Current_Catch","Current_Effort"),
@@ -249,6 +291,19 @@ Results_Server <- function(id,Info) {
                    }
                  })
 
+                 proj_height <- reactiveVal(300)
+
+                 observe({
+                   if(!is.null(Info$MSEproj)) {
+                     nMPs <- Info$MSEproj@nMPs
+                     if (nMPs > 3) {
+                       plotheight <- 300 + (nMPs-3)*300
+                     }else plotheight <- 300
+                     proj_height(plotheight)
+                   }
+                 })
+
+
                  output$Projection_results <- renderUI({
                    if(is.null(Info$MSEproj)) {
                      return(h4('Projections have not been run yet.', style = "color:red"))
@@ -256,22 +311,42 @@ Results_Server <- function(id,Info) {
                      ns <- NS(id)
                      tagList(
                        tabsetPanel(
-                         tabPanel(h5('Projection Plots', style='color:black;'),
+                         tabPanel(h4('Projection Plots', style='color:black;'),
                                   value=1,
-                                  br(),
-                                  column(8,
-                                         plotOutput(ns('Projection_plot'))
-                                  ),
-                                  column(4,
-                                         h3('Projection Plot'),
-                                         selectInput(ns('Proj_Var'),
-                                                     label = 'Projection Variable',
-                                                     choices = c('Spawning Biomass', 'Catch')),
-                                         htmlOutput(ns('Proj_opts')),
-                                         htmlOutput(ns('Proj_text'))
+                                  tabsetPanel(
+                                    tabPanel(h4('Spawning Biomass', style='color:black;'),
+                                             column(8,
+                                                    br(),
+                                                    plotOutput(ns('Biomass_projection_plot'))
+                                             ),
+                                             column(4,
+                                                    htmlOutput(ns('Biomass_text')),
+                                                    htmlOutput(ns('Biomass_opts'))
+                                             )
+                                    ),
+                                    tabPanel(h4('Catch', style='color:black;'),
+                                             column(8,
+                                                    br(),
+                                                    plotOutput(ns('Catch_projection_plot'))
+                                             ),
+                                             column(4,
+                                                    htmlOutput(ns('Catch_text')),
+                                                    htmlOutput(ns('Catch_opts'))
+                                             )
+                                    ),
+                                    tabPanel(h4('Recruitment', style='color:black;'),
+                                             column(8,
+                                                    br(),
+                                                    plotOutput(ns('Rec_projection_plot'))
+                                             ),
+                                             column(4,
+                                                    htmlOutput(ns('Rec_text')),
+                                                    htmlOutput(ns('Rec_opts'))
+                                             )
+                                    )
                                   )
                          ),
-                         tabPanel(h5('Trade-Off Plots', style='color:black;'),
+                         tabPanel(h4('Trade-Off Plots', style='color:black;'),
                                   value=2,
                                   br(),
                                   column(8,
@@ -293,60 +368,182 @@ Results_Server <- function(id,Info) {
                    }
                  })
 
-                 output$Projection_plot <- renderPlot({
-                   if (input$Proj_Var == 'Spawning Biomass') opt <- input$SBopts
-                   if (input$Proj_Var == 'Catch') opt <- input$Copts
-
-                   Projection_plot(Info$MSEproj, input$Proj_Var, opt)
+                 observe({
+                 output$Biomass_projection_plot <- renderPlot({
+                   if (!is.null(input$SB_quants))
+                     Projection_plot(Info$MSEproj, 'Spawning Biomass', input$SBopts, input$SB_quants)
                  },
-                 width=function() {
-                   dims <- window_dims()
-                   dims[1]*0.3
-                 },
-                 height=function() {
-                   dims <- window_dims()
-                   dims[1]*0.3
+                 height=proj_height())
                  })
 
-                 output$Proj_opts <- renderUI({
-                   ns <- NS(id)
-
-                   if (input$Proj_Var == 'Spawning Biomass') {
-                     out <- tagList(
-                       radioButtons(ns('SBopts'), 'Relative to:',
-                                    choices=c('SB0', 'SBMSY'))
-                     )
-                   }
-                   if (input$Proj_Var == 'Catch') {
-                     out <- tagList(
-                       checkboxInput(ns('Copts'), 'Include removals?',
-                                     value=FALSE)
-                     )
-                   }
-                   return(out)
+                 observe({
+                   output$Catch_projection_plot <- renderPlot({
+                     if (!is.null(input$Catch_quants))
+                       Projection_plot(Info$MSEproj, 'Catch', input$Catchopts, input$Catch_quants)
+                   },
+                   height=proj_height())
                  })
 
-                 output$Proj_text <- renderUI({
+
+                 observe({
+                   output$Rec_projection_plot <- renderPlot({
+                     if (!is.null(input$Rec_quants))
+                       Projection_plot(Info$MSEproj, 'Recruitment', 0, input$Rec_quants)
+                   },
+                   height=proj_height())
+                 })
+
+
+                 output$Biomass_text <-  renderUI({
                    ns <- NS(id)
                    nMPs <- Info$MSEproj@nMPs
                    txt <- ''
                    if (nMPs>1) p <- 'plots'
                    if (nMPs==1) p <- 'plot'
-                   if (input$Proj_Var=='Spawning Biomass') {
+                   if (nMPs>1) tt <- 'These'
+                   if (nMPs==1) tt <- 'This'
+                   quant1 <- input$SB_quants
+                   quant2 <- 100-quant1
+
                      if (length(input$SBopts)>0) {
-                       if (input$SBopts=='SB0') {
-                         txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of spawning biomass relative to average unfished spawning biomass (SB0) for each MP.')
+                       if (quant1>50) {
+                         if (input$SBopts=='SB0') {
+                           txt <- paste0(tt, ' projection ', p, ' show the median (line) and ', quant2, 'th and ', quant1, 'th percentiles (shading) of spawning biomass relative to average unfished spawning biomass (SB0) for each MP.')
+                         } else {
+                           txt <- paste0(tt, ' projection ', p, ' show the median (line) and ', quant2, 'th and ', quant1, 'th percentiles (shading) of spawning biomass relative to spawning biomass corresponding with maximum sustainable yield (SBMSY) for each MP.')
+                         }
                        } else {
-                         txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of spawning biomass relative to spawning biomass corresponding with maximum sustainable yield (SBMSY) for each MP.')
+                         if (input$SBopts=='SB0') {
+                           txt <- paste0(tt, ' projection ', p, ' show the median spawning biomass relative to average unfished spawning biomass (SB0) for each MP.')
+                         } else {
+                           txt <- paste0(tt, ' projection ', p, ' show the median spawning biomass relative to spawning biomass corresponding with maximum sustainable yield (SBMSY) for each MP.')
+                         }
                        }
+
                      }
-                   }
-                   if (input$Proj_Var=='Catch') {
-                     txt <- paste0('Projection ', p, ' showing the median (line) and 25th and 75th percentiles (shading) of projected catch relative to catch in the most recent year for each MP.')
+                   if (length(txt)>0)
+                     return(tagList(
+                       br(),
+                       h4('Projection Plots: Spawning Biomass'),
+                       br(),
+                       p(txt),
+                       br())
+                     )
+                 })
+
+                 output$Catch_text <-  renderUI({
+                   ns <- NS(id)
+                   nMPs <- Info$MSEproj@nMPs
+                   txt <- ''
+                   if (nMPs>1) p <- 'plots'
+                   if (nMPs==1) p <- 'plot'
+                   if (nMPs>1) tt <- 'These'
+                   if (nMPs==1) tt <- 'This'
+                   quant1 <- input$Catch_quants
+                   quant2 <- 100-quant1
+
+                   if (quant1>50) {
+                     txt <- paste0(tt, ' projection ', p, ' showing the median (line) and ', quant2, 'th and ', quant1, 'th percentiles (shading) of projected catch relative to catch in the most recent year for each MP.')
+                   } else {
+                     txt <- paste0(tt, ' projection ', p, ' showing the median projected catch relative to catch in the most recent year for each MP.')
                    }
                    if (length(txt)>0)
-                     return(tagList(p(txt)))
+                     return(tagList(
+                       br(),
+                       h4('Projection Plots: Catch'),
+                       br(),
+                       p(txt),
+                       br())
+                     )
                  })
+
+                 output$Rec_text <-  renderUI({
+                   ns <- NS(id)
+                   nMPs <- Info$MSEproj@nMPs
+                   txt <- ''
+                   if (nMPs>1) p <- 'plots'
+                   if (nMPs==1) p <- 'plot'
+                   if (nMPs>1) tt <- 'These'
+                   if (nMPs==1) tt <- 'This'
+                   quant1 <- input$Rec_quants
+                   quant2 <- 100-quant1
+
+                   if (quant1>50) {
+                     txt <- paste0(tt, ' projection ', p, ' showing the median (line) and ', quant2, 'th and ', quant1, 'th percentiles (shading) of projected recruitment relative to the average unfished recruitment for each MP.')
+                   } else {
+                     txt <- paste0(tt, ' projection ', p, ' showing the median projected recruitment relative to the average unfished recruitment for each MP.')
+                   }
+                   if (length(txt)>0)
+                     return(tagList(
+                       br(),
+                       h4('Projection Plots: Recruitment'),
+                       br(),
+                       p(txt),
+                       br())
+                     )
+                 })
+
+
+                 output$Biomass_opts <- renderUI({
+                   ns <- NS(id)
+                   tagList(
+                     bsCollapse(id = ns("Biocollapse"),
+                                bsCollapsePanel("Plot Controls (click to expand)", style = "primary",
+                                                radioButtons(ns('SBopts'), 'Relative to:',
+                                                             choices=c('SB0', 'SBMSY')),
+                                                sliderInput(ns('SB_quants'),
+                                                            'Percentiles',
+                                                            min=50,
+                                                            max=100,
+                                                            value=50,
+                                                            step=5
+                                                            )
+                                )
+                     )
+
+                   )
+                 })
+
+                 output$Catch_opts <- renderUI({
+                   ns <- NS(id)
+                   tagList(
+                     bsCollapse(id = ns("Catchcollapse"),
+                                bsCollapsePanel("Plot Controls (click to expand)", style = "primary",
+                                                checkboxInput(ns('Catchopts'), 'Include removals?',
+                                                              value=FALSE),
+                                                sliderInput(ns('Catch_quants'),
+                                                            'Percentiles',
+                                                            min=50,
+                                                            max=100,
+                                                            value=50,
+                                                            step=5
+                                                )
+                                )
+                     )
+
+                   )
+                 })
+
+                 output$Rec_opts <- renderUI({
+                   ns <- NS(id)
+                   tagList(
+                     bsCollapse(id = ns("Reccollapse"),
+                                bsCollapsePanel("Plot Controls (click to expand)", style = "primary",
+                                                sliderInput(ns('Rec_quants'),
+                                                            'Percentiles',
+                                                            min=50,
+                                                            max=100,
+                                                            value=50,
+                                                            step=5
+                                                )
+                                )
+                     )
+
+                   )
+                 })
+
+
+
 
                  output$TradeOff_plot <- renderPlot({
                    Xaxis <- list()
@@ -505,6 +702,17 @@ makeEffortMP <- function(eff) {
   mp <- function (x, Data, reps, ...)  {
     rec <- new("Rec")
     rec@Effort <- eff
+    rec
+  }
+  class(mp) <- 'MP'
+  mp
+}
+
+makeTACMP <- function(catch) {
+  mp <- function (x, Data, reps, ...)  {
+    rec <- new("Rec")
+    yearind <- which(Data@Year == Data@LHYear)
+    rec@TAC <- Data@Cat[x,yearind]
     rec
   }
   class(mp) <- 'MP'
