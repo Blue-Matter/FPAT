@@ -26,7 +26,7 @@ Results_Server <- function(id,Info) {
                      ns <- NS(id)
                      tagList(
                        fluidRow(
-                         box(width=4, status='primary', solidHeader = TRUE,
+                         box(width=3, status='primary', solidHeader = TRUE,
                              title='Management Strategy Selection',
                              column(12,
                                     h4(strong('Status Quo Catch and Effort')),
@@ -55,7 +55,7 @@ Results_Server <- function(id,Info) {
                                     htmlOutput(ns('DownloadMSE'))
                              )
                          ),
-                         box(width=8, status='primary', solidHeader = TRUE, height=1050,
+                         box(width=9, status='primary', solidHeader = TRUE, height=1050,
                              title='MSE Results',
                              htmlOutput(ns('Projection_results'))
 
