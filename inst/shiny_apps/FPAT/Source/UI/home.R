@@ -5,6 +5,7 @@ Home_UI <- function(id, label="Home") {
 
   ns <- NS(id)
   tagList(
+
     column(11,
            br(),
            h3('The Coastal Fisheries Initiative (CFI)'),

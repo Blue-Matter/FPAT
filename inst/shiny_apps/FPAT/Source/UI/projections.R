@@ -11,7 +11,8 @@ Results_UI <- function(id, label="Results") {
              htmlOutput(ns('checkloaded')),
              htmlOutput(ns('MSE_results'))
       )
-    )
+
+  )
   )
 }
 
@@ -25,9 +26,8 @@ Results_Server <- function(id,Info) {
                    if(!is.null(Info$MSEhist)) {
                      ns <- NS(id)
                      tagList(
-                       fluidRow(
-                         box(width=3, status='primary', solidHeader = TRUE,
-                             title='Management Strategy Selection',
+                         column(width=3,
+                             h3('Management Strategy Selection'),
                              column(12,
                                     h4(strong('Status Quo Catch and Effort')),
                                     p('Fishing in the projection years is fixed at the current catch and current effort.'),
@@ -52,15 +52,17 @@ Results_Server <- function(id,Info) {
                                     br(),
                                     h5('Select the management procedures you wish to test and run the MSE projections.'),
                                     actionButton(ns("runMSE"),label="Run MSE Projections",icon=icon('cogs')),
-                                    htmlOutput(ns('DownloadMSE'))
+                                    htmlOutput(ns('DownloadMSE')),
+                                    br(),
+                                    hr()
                              )
                          ),
-                         box(width=9, status='primary', solidHeader = TRUE, height=1050,
-                             title='MSE Results',
+                         column(width=9,
+                             h3('MSE Results'),
                              htmlOutput(ns('Projection_results'))
 
                          )
-                       )
+
                      )
 
                    }
@@ -291,14 +293,14 @@ Results_Server <- function(id,Info) {
                    }
                  })
 
-                 proj_height <- reactiveVal(300)
+                 proj_height <- reactiveVal(400)
 
                  observe({
-                   if(!is.null(Info$MSEproj)) {
-                     nMPs <- Info$MSEproj@nMPs
+                   if(!is.null(Info$MSEproj2)) {
+                     nMPs <- Info$MSEproj2@nMPs
                      if (nMPs > 3) {
-                       plotheight <- 300 + (nMPs-3)*300
-                     }else plotheight <- 300
+                       plotheight <- 400 + (nMPs/3)*400
+                     }else plotheight <- 400
                      proj_height(plotheight)
                    }
                  })
@@ -310,6 +312,8 @@ Results_Server <- function(id,Info) {
                    } else {
                      ns <- NS(id)
                      tagList(
+                       column(10,
+
                        tabsetPanel(
                          tabPanel(h4('Projection Plots', style='color:black;'),
                                   value=1,
@@ -364,14 +368,28 @@ Results_Server <- function(id,Info) {
                                   )
                          )
                        )
+                       ),
+                       column(2,
+                              checkboxGroupInput(ns('MP_select'),
+                                                   'Filter MPs',
+                                                   choices=Info$MSEproj@MPs,
+                                                   selected=Info$MSEproj@MPs)
+
+                              )
+
                      )
                    }
                  })
 
+                 observeEvent(input$MP_select, {
+                   Info$MSEproj2 <- Sub(Info$MSEproj, MPs=input$MP_select)
+                 })
+
+
                  observe({
                  output$Biomass_projection_plot <- renderPlot({
                    if (!is.null(input$SB_quants))
-                     Projection_plot(Info$MSEproj, 'Spawning Biomass', input$SBopts, input$SB_quants)
+                     Projection_plot(Info$MSEproj2, 'Spawning Biomass', input$SBopts, input$SB_quants)
                  },
                  height=proj_height())
                  })
@@ -379,7 +397,7 @@ Results_Server <- function(id,Info) {
                  observe({
                    output$Catch_projection_plot <- renderPlot({
                      if (!is.null(input$Catch_quants))
-                       Projection_plot(Info$MSEproj, 'Catch', input$Catchopts, input$Catch_quants)
+                       Projection_plot(Info$MSEproj2, 'Catch', input$Catchopts, input$Catch_quants)
                    },
                    height=proj_height())
                  })
@@ -388,7 +406,7 @@ Results_Server <- function(id,Info) {
                  observe({
                    output$Rec_projection_plot <- renderPlot({
                      if (!is.null(input$Rec_quants))
-                       Projection_plot(Info$MSEproj, 'Recruitment', 0, input$Rec_quants)
+                       Projection_plot(Info$MSEproj2, 'Recruitment', 0, input$Rec_quants)
                    },
                    height=proj_height())
                  })
@@ -396,7 +414,7 @@ Results_Server <- function(id,Info) {
 
                  output$Biomass_text <-  renderUI({
                    ns <- NS(id)
-                   nMPs <- Info$MSEproj@nMPs
+                   nMPs <- Info$MSEproj2@nMPs
                    txt <- ''
                    if (nMPs>1) p <- 'plots'
                    if (nMPs==1) p <- 'plot'
@@ -433,7 +451,7 @@ Results_Server <- function(id,Info) {
 
                  output$Catch_text <-  renderUI({
                    ns <- NS(id)
-                   nMPs <- Info$MSEproj@nMPs
+                   nMPs <- Info$MSEproj2@nMPs
                    txt <- ''
                    if (nMPs>1) p <- 'plots'
                    if (nMPs==1) p <- 'plot'
@@ -459,7 +477,7 @@ Results_Server <- function(id,Info) {
 
                  output$Rec_text <-  renderUI({
                    ns <- NS(id)
-                   nMPs <- Info$MSEproj@nMPs
+                   nMPs <- Info$MSEproj2@nMPs
                    txt <- ''
                    if (nMPs>1) p <- 'plots'
                    if (nMPs==1) p <- 'plot'
@@ -564,7 +582,7 @@ Results_Server <- function(id,Info) {
                    if (length(Yaxis$Reference)<1) Yaxis$Reference <- 0
                    if(length(IncEy)<1) IncEy <- FALSE
 
-                   TradeOff_plot(Info$MSEproj, Xaxis, Yaxis, IncEx, IncEy)
+                   TradeOff_plot(Info$MSEproj2, Xaxis, Yaxis, IncEx, IncEy)
                  },
                  width=function() {
                    dims <- window_dims()

@@ -117,6 +117,7 @@ Current_Effort <- curE
 
 
 Check_Sheets <- function(Info) {
+
   # Check all required sheet names exist
   req_sheets <- c('Cover Page', 'Summary', 'Output-table',
                   'Input-table', 'Fishery Data', 'FPAT App Questions', 'Effort Dynamics')
@@ -186,7 +187,6 @@ Check_Sheets <- function(Info) {
 
   # Load openMSE sheets
   Info$openMSE.Qs <- readxl::read_excel(Info$file$datapath, sheet=FPAT_App_Questions, .name_repair = 'minimal')
-
   Info$Data <- try(XL2Data(name=Info$file$datapath, sheet=Fishery_Data), silent=TRUE)
 
   Info

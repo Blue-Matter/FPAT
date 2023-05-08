@@ -24,12 +24,11 @@ FPI_Server <- function(id, Info, FPI_2) {
          if(!is.null(Info$FPI.Cover)) {
            ns <- NS(id)
            tagList(
-             fluidRow(
-               box(width=9, status='primary', solidHeader = TRUE,
-                   title='FPI Scores',
-                   tabsetPanel(
+             column(8,
+                    h2('FPI Scores'),
                      # Output Sector Scores
-                     tabPanel(h5('Outputs: Sector', style='color:black;'),
+                    tabsetPanel(
+                      tabPanel(h5('Outputs: Sector', style='color:black;'),
                               value=1,
                               br(),
                               fluidRow(
@@ -47,7 +46,8 @@ FPI_Server <- function(id, Info, FPI_2) {
                                        h3('Individual FPI Scores'),
                                        htmlOutput(ns('output_tableui'))
                                        ),
-                                column(6,
+                                column(1),
+                                column(5,
                                        h3('Comments'),
                                        textAreaInput(ns("output_sector_comment"), "Discussion Text",
                                                       placeholder='Copy/paste discussion text here to be included in report.',
@@ -75,7 +75,8 @@ FPI_Server <- function(id, Info, FPI_2) {
                                        h3('Individual FPI Scores'),
                                        htmlOutput(ns('output_tbl_tableui'))
                                 ),
-                                column(6,
+                                column(1),
+                                column(5,
                                        h3('Comments'),
                                        textAreaInput(ns("output_tbl_comment"), "Discussion Text",
                                                      placeholder='Copy/paste discussion text here to be included in report.',
@@ -102,7 +103,8 @@ FPI_Server <- function(id, Info, FPI_2) {
                                        h3('Individual FPI Scores'),
                                        htmlOutput(ns('input_tableui'))
                                 ),
-                                column(6,
+                                column(1),
+                                column(5,
                                        h3('Comments'),
                                        textAreaInput(ns("input_comment"), "Discussion Text",
                                                      placeholder='Copy/paste discussion text here to be included in report.',
@@ -110,31 +112,35 @@ FPI_Server <- function(id, Info, FPI_2) {
                                 )
                               )
                      )
-                   )
-               ),
-               box(width=3,status='primary', solidHeader = TRUE,
-                   title='FPI Metadata',
-                   tableOutput(ns('FPImetadata'))
-               ),
-               box(width=3,status='primary', solidHeader = TRUE,
-                   title='FPI Comparisons',
-                   shiny::selectInput(ns('baseline'), 'Baseline Comparison',
-                                      choices=BaseLineChoices,
-                                      multiple = TRUE),
-                   h5(strong('Another FPI data file')),
-                       column(8, fileInput(ns("Load2"),label=NULL, accept=c('.xls', '.xlsx'))),
-                       column(4, actionButton(ns('remove'), 'Remove'))
+                    )
+             ),
+             column(1),
 
-               ),
-               box(width=3,status='primary', solidHeader = TRUE,
-                   title='Download FPI Report',
-                   p('The FPI plots can be downloaded in a FPI Report by clicking the button below.'),
-                   # radioButtons(ns('filetype'), 'Report File Type',
-                   #              choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
-                   downloadButton(ns('downloadFPIRep'), 'Download FPI Report')
-               )
+             column(3,
+                    fluidRow(
+                    h2('FPI Metadata'),
+                    tableOutput(ns('FPImetadata')),
+                    br()),
+                    fluidRow(
+                    h2('FPI Comparisons'),
+                    shiny::selectInput(ns('baseline'), 'Baseline Comparison',
+                                       choices=BaseLineChoices,
+                                       multiple = TRUE),
+                    h5(strong('Another FPI data file')),
+                    column(8, fileInput(ns("Load2"),label=NULL, accept=c('.xls', '.xlsx'))),
+                    column(4, actionButton(ns('remove'), 'Remove')),
+                    br()),
+                    fluidRow(
+                    h2('Download FPI Report'),
+                    p('The FPI plots can be downloaded in a FPI Report by clicking the button below.'),
+                    # radioButtons(ns('filetype'), 'Report File Type',
+                    #              choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
+                    downloadButton(ns('downloadFPIRep'), 'Download FPI Report')
+                    )
              )
            )
+
+
            }
          })
 

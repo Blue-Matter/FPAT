@@ -37,17 +37,14 @@ fetchOM<-function(Info, Toggles, session){
 
   Info <- Check_Sheets(Info)
 
-  # Info$Summary
-  # output_dim_scores(FPI.Summary, NULL)
+  if (!class(Info)=='reactivevalues' && Info==0) return(NULL)
 
+  # output_dim_scores(FPI.Summary, NULL)
 
   # FPI part loaded successfully
   Toggles$FPI_Loaded <- TRUE
-
-
-
   if (class(Info$Data)=='try-error') {
-    e <- paste("Could not import fishery data from Sheet", Info$Sheet_Names$Fishery_Data,".", sep='\n', Info$Data)
+    e <- paste("Could not import fishery data from Sheet", Info$Sheet_Names$Fishery_Data,".", sep='\n')
     AM(paste0(e,"\n"))
     shinyalert("The FPI information was imported but the operating model could not be generated:", paste("Error:",e), type = "error")
     AM(paste0(e,"\n"))

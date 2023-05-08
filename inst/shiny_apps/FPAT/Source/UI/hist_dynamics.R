@@ -27,8 +27,8 @@ HistDynamics_Server <- function(id, Info, Toggles) {
            ns <- NS(id)
            tagList(
              fluidRow(
-               box(width=9, status='primary', solidHeader = TRUE,
-                   title='Historical Fishery Dynamics',
+               column(8,
+                   h2('Historical Fishery Dynamics'),
                    tabsetPanel(
                      tabPanel(h5('Spawning Biomass', style='color:black;'),
                               value=1,
@@ -68,38 +68,46 @@ HistDynamics_Server <- function(id, Info, Toggles) {
                      )
                    )
                ),
-               box(width=3,status='primary', solidHeader = TRUE,
-                   title='Fishery Simulation Metadata',
-                   tableOutput(ns('FisheryMetadata')),
-                   htmlOutput(ns('Assumptions'))
-               ),
-
-               box(width=3,status='primary', solidHeader = TRUE,
-                   title='Download OM Report',
-                   p('An Operating Model Report with plots of all simulated fishery dynamics and
+               column(1),
+               column(3,
+                      fluidRow(
+                        h3('Fishery Simulation Metadata'),
+                        tableOutput(ns('FisheryMetadata')),
+                        htmlOutput(ns('Assumptions'))
+                      ),
+                      fluidRow(
+                        column(10,
+                        h3('Download OM Report'),
+                        p('An Operating Model Report with plots of all simulated fishery dynamics and
                                        parameters can be downloaded by clicking the button below.'),
-                   # radioButtons(ns('filetype'), 'Report File Type',
-                                # choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
-                   downloadButton(ns('downloadOMRep'), 'Download OM Report'),
-                   br()
-               ),
-               box(width=3,status='primary', solidHeader = TRUE,
-                   title='Advanced',
-                   bsCollapse(id = "collapseExample",
-                              bsCollapsePanel("Download OM",
-                                              p('For more detailed analysis, the Operating Model object can be downloaded',
-                                                'and used in the',
-                                                a(href='https://openmse.com/', 'openMSE', target="_blank"),
-                                                'framework.'),
-                                              downloadButton(ns('downloadOM'), 'Download OM'),
-                                              style = "info"),
-                              bsCollapsePanel("Load an OM from file",
-                                              p('An openMSE Operating Model object can be uploaded here.',
-                                                'This will replace the operating model constructed from the FPAT data file.'),
-                                              fileInput(ns("LoadOM"),label=NULL, accept=c('.OM', '.rda', '.rdata')),
-                                              style = "info")
-                   )
+                        # radioButtons(ns('filetype'), 'Report File Type',
+                        # choices = list("HTML" = 'html', "PDF" = 'pdf'), inline=TRUE),
+                        downloadButton(ns('downloadOMRep'), 'Download OM Report'),
+                        br()
+                        )
+                        ),
+                      fluidRow(
+                        column(10,
+                        h3('Advanced'),
+                        bsCollapse(id = "collapseExample",
+                                   bsCollapsePanel("Download OM",
+                                                   p('For more detailed analysis, the Operating Model object can be downloaded',
+                                                     'and used in the',
+                                                     a(href='https://openmse.com/', 'openMSE', target="_blank"),
+                                                     'framework.'),
+                                                   downloadButton(ns('downloadOM'), 'Download OM'),
+                                                   style = "info"),
+                                   bsCollapsePanel("Load an OM from file",
+                                                   p('An openMSE Operating Model object can be uploaded here.',
+                                                     'This will replace the operating model constructed from the FPAT data file.'),
+                                                   fileInput(ns("LoadOM"),label=NULL, accept=c('.OM', '.rda', '.rdata')),
+                                                   style = "info")
+                        )
+                      )
+                      )
+
                )
+
              )
            )
          }
