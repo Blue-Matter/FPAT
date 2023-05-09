@@ -11,7 +11,7 @@ server <- function(input, output, session) {
     Fit=FALSE,    # Model fitted?
     MSE=FALSE)    # MSE run?
 
-  useShinyjs()
+
   output$FPI_Loaded <- reactive({ Toggles$FPI_Loaded })
   outputOptions(output, "FPI_Loaded", suspendWhenHidden = FALSE)
 

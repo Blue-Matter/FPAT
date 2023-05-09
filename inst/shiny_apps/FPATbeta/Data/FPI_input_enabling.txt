@@ -1,0 +1,8 @@
+FPI input scores measure the level of enabling conditions which support fishery performance. Higher scores reflect more of the enabling condition, though whether or how each input affects fishery performance is an empirical question. In some cases, these relationships can be complex, and depend on the presence of several enabling conditions at once.
+
+One way to evaluate the fishery's enabling conditions is to compare them to benchmark scores for select categories of fisheries, the average scores for those fisheries in the FPI database.
+
+Another use of enabling condition data is to select the enabling conditions that will be altered in hopes of improving the target performance dimension. Data from FPI case studies with different levels of that enabling condition, and other sources, can then be used to evaluate whether changes in that enabling condition are associated with better performance.
+
+
+

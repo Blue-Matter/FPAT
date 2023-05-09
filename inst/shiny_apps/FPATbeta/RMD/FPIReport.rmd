@@ -1,0 +1,94 @@
+---
+title: "FPI Report"
+params:
+  Info: na
+  input_baseline: na
+  BaseLine: na
+  FPI_2_Summary: na
+  comment_text: na
+  desc_text: na
+fig_width: 6 
+fig_height: 6
+---
+  
+```{r include=FALSE}
+knitr::opts_chunk$set(echo=FALSE)
+
+```
+
+## FPI Metadata
+
+```{r}
+knitr::kable(makemetadata(params$Info$FPI.Cover))
+
+```
+
+## Outputs: Sector
+
+```{r, results='asis'}
+cat(params$desc_text$output, sep = '\n')
+
+```
+
+
+```{r}
+output_dim_scores(params$Info$Summary, 
+                  params$input_baseline, 
+                  params$BaseLine, 
+                  params$FPI_2_Summary)
+```
+
+```{r, results='asis'}
+if (nchar(params$comment_text$output_sector)>0) {
+   cat('\n### Discussion Comments\n\n')
+  cat(params$comment_text$output_sector)
+}
+  
+```
+
+
+## Outputs: Triple Bottom Line
+
+```{r, results='asis'}
+cat(params$desc_text$output_tpl, sep = '\n')
+```
+
+
+```{r}
+output_scores_TBL(params$Info$Summary, 
+                  params$input_baseline, 
+                  params$BaseLine, 
+                  params$FPI_2_Summary)
+```
+
+
+```{r, results='asis'}
+if (nchar(params$comment_text$output_tbl)>0) {
+   cat('\n### Discussion Comments\n\n')
+  cat(params$comment_text$output_tbl)
+}
+  
+```
+
+## Inputs: Enabling Conditions
+
+```{r, results='asis'}
+cat(params$desc_text$input, sep = '\n')
+```
+
+
+```{r}
+input_dim_scores(params$Info$Summary, 
+                  params$input_baseline, 
+                  params$BaseLine, 
+                  params$FPI_2_Summary)
+```
+
+```{r, results='asis'}
+if (nchar(params$comment_text$input)>0) {
+   cat('\n### Discussion Comments\n\n')
+  cat(params$comment_text$input)
+}
+  
+```
+
