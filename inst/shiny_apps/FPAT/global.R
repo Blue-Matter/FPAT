@@ -21,7 +21,6 @@ source('results.R')
 
 for (fl in list.files("./Source")) source(file.path("./Source", fl))
 
-
 CheckFPILoaded <- function(Info) {
   renderUI({
     if(is.null(Info$sheets))
