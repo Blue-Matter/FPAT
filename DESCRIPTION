@@ -1,7 +1,7 @@
 Package: FPAT
 Type: Package
 Title: Fisheries Performance Assessment Toolkit
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: c(
     person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")),
     person("Adrian", "Hordyk", , "adrian@bluematterscience.com", role="aut"))

@@ -11,6 +11,7 @@ library(shinyjs)
 library(shinyalert)
 library(openMSE)
 library(cowplot)
+library(tidyr)
 
 source('home.r')
 source('load.R')
