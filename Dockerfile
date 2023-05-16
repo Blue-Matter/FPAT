@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 RUN R -e "install.packages(c('shiny', 'rmarkdown', 'remotes'), repos='https://cloud.r-project.org/')"
 
 # install R package from shiny_live branch
-RUN R -e "remotes::install_github(c('blue-matter/Slick'), 'shiny_live', dependencies=TRUE)"
+RUN R -e "remotes::install_github(c('blue-matter/FPAT'), 'shiny_live', dependencies=TRUE)"
 
 # instruct Docker to expose port 3838 to the outside world
 # (otherwise it will not be possible to connect to the Shiny application)
