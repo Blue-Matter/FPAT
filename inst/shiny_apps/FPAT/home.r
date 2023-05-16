@@ -27,7 +27,6 @@ Home_UI <- function(id, label="settings") {
            sustainable resource rents or profits', a(href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0122809',
                                                      '(Anderson et al., 2015).', target="_blank")),
 
-
            h3('The FPAT Process'),
            p('FPAT includes two tools: the', a(href='https://www.fpilab.org/', 'Fisheries Performance Indicators:'),
              'a tool designed to determine how fisheries management systems are performing in order
