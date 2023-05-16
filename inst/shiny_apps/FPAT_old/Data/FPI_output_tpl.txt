@@ -1,0 +1,5 @@
+FPI output scores measure the fishery's performance on the pillars of the triple bottom line. Higher scores are better, reflecting that the fishery is attaining more success on ecological, economic or community pillars.
+
+This graph is used to identify the dimensions where the fishery is performing well, and to target dimensions for improvement. Different fisheries may have different, locally identified performance priorities.
+
+As a general rule, scoring levels have been chosen so that scores below 3 reflect the need for improvement. The fishery may also be compared to benchmark scores for select categories of fisheries, average scores for those fisheries in the FPI database.

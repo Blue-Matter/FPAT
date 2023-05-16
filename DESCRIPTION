@@ -8,8 +8,24 @@ Authors@R: c(
 Maintainer: Tom Carruthers <tom@bluematterscience.com>
 Description: A Shiny App that links the Fisheries Performance Indicators (FPI) to the operating models and management procedures of openMSE
 License: GPL-3
+Imports:
+    cowplot,
+    dplyr,
+    DT,
+    ggplot2,
+    ggrepel,
+    openMSE,
+    readxl,
+    shiny,
+    shinyBS,
+    shinydashboard,
+    shinydashboardPlus,
+    shinyjs,
+    shinyalert,
+    shinycssloaders,
+    shinyWidgets
 Depends:
-    R (>= 4.0.1),
-    MSEtool
+    R (>= 4.0.1)
 Encoding: UTF-8
 LazyData: true
+
