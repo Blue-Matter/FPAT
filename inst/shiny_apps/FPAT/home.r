@@ -1,8 +1,6 @@
 Home_UI <- function(id, label="settings") {
-
   ns <- NS(id)
   tagList(
-
     column(11,
            br(),
            h2('The Fisheries Performance Assessment Toolkit'),
