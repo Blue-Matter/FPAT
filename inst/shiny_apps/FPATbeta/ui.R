@@ -22,7 +22,6 @@ SettingsUI <- function(id, label="settings") {
 
 
 
-
 # -- header ----
 header <- shinydashboardPlus::dashboardHeader(
   leftUi = tagList(
@@ -38,18 +37,21 @@ header <- shinydashboardPlus::dashboardHeader(
 
 # -- rhs controlbar ----
 controlbar <- dashboardControlbar(
-  skin = "dark",
-  controlbarMenu(
-    id = "menu",
-    controlbarItem(
-      "Tab 1",
-      "Welcome to tab 1"
-    ),
-    controlbarItem(
-      "Tab 2",
-      "Welcome to tab 2"
+  conditionalPanel(
+    condition="input.sidebar=='projections'",
+    controlbarMenu(
+      id = "menu",
+      controlbarItem(
+        "Tab 1",
+        "Welcome to tab 1"
+      ),
+      controlbarItem(
+        "Tab 2",
+        "Welcome to tab 2"
+      )
     )
   )
+
 )
 
 
@@ -57,7 +59,7 @@ controlbar <- dashboardControlbar(
 # -- lhs sidebar ----
 sidebar <- dashboardSidebar(
   collapsed = TRUE,
-  sidebarMenu(id='NonTech',
+  sidebarMenu(id='sidebar',
               menuItem("Home", tabName = "home", icon = icon("house")),
               menuItem("1. Load", tabName = "load", icon = icon("upload")),
               menuItem("2. FPI Scores", tabName = "fpi", icon = icon("chart-bar")),
@@ -132,9 +134,9 @@ dashboardPage(
   header=header,
   sidebar=sidebar,
   body=body,
-  controlbar=controlbar,
+  controlbar=NULL,
   title='FPAT',
   dashboardFooter(left =  div(htmlOutput('package_versions'), textOutput("SessionID")),
                   right = h6("Copyright", HTML("&#169;"), tags$a(href='https://bluematterscience.com/',
-                                 target="_blank", paste0("Blue Matter Science Ltd.", format(Sys.Date(), "%Y")))))
+                                 target="_blank", paste("Blue Matter Science Ltd.", format(Sys.Date(), "%Y")))))
 )

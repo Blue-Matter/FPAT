@@ -15,7 +15,7 @@ Results_UI <- function(id, label="Results") {
   )
 }
 
-Results_Server <- function(id,Info) {
+Results_Server <- function(id,Info, window_dims) {
   moduleServer(id,
                function(input, output, session) {
 
@@ -52,14 +52,18 @@ Results_Server <- function(id,Info) {
                                     br(),
                                     h5('Select the management procedures you wish to test and run the MSE projections.'),
                                     actionButton(ns("runMSE"),label="Run MSE Projections",icon=icon('cogs')),
+
+                                    fileInput(ns("uploadMSE"),label='Load an MSE Object'),
+
+
                                     htmlOutput(ns('DownloadMSE'))
                              )
                          ),
-                         box(width=9, status='primary', solidHeader = TRUE, height=1050,
-                             title='MSE Results',
-                             htmlOutput(ns('Projection_results'))
+                           column(9,
+                                 htmlOutput(ns('Projection_results'))
+                               )
 
-                         )
+
                        )
                      )
 
@@ -81,7 +85,7 @@ Results_Server <- function(id,Info) {
                  observeEvent(input$reset_defaults, {
                    Info$MPsel <- c("Current_Catch","Current_Effort")
                    updateCheckboxGroupInput(session, inputId='MPset',
-                                            label="Select Management Procedures 2 ",
+                                            label="Select Management Procedures",
                                             choiceNames=c("Status Quo Catch and Effort","Size limits","Length-based",
                                                           "Index-based", "Spatial Management"),
                                             choiceValues=c("SQ","Size","LB","IB", "Spatial"),selected=c("SQ"))
@@ -166,10 +170,10 @@ Results_Server <- function(id,Info) {
                  shinyjs::disable("loadMP")
 
                  observeEvent(input$ImportMP, {
-                   filey <<- input$ImportMP
+                   filey <- input$ImportMP
 
                    tryCatch({
-                     MP_out <<- readRDS(file = filey$datapath)
+                     MP_out <- readRDS(file = filey$datapath)
                      stopifnot(typeof(MP_out) == "closure" && inherits(MP_out, "MP"))
                      shinyjs::enable("loadMP")
 
@@ -275,6 +279,25 @@ Results_Server <- function(id,Info) {
                    runProj(Info)
                  })
 
+                 observeEvent(input$uploadMSE,{
+                   fl <- input$uploadMSE
+
+                   mse <- readRDS(fl$datapath)
+                   Info$MSEproj <- mse
+                 })
+
+                 # observeEvent(input$LoadSelected,{
+                 #
+                 #   if(input$Select=="Costa Rica - Multi-species")
+                 #     Info$file <- list(datapath = "./Data/Casestudies/Demo_1.xlsx")
+                 #
+                 #   AM(Info$file)
+                 #   fetchOM(Info, Toggles, session)
+                 #
+                 # })
+
+                 TradeOffServer('TO', Info, input, window_dims)
+
 
 
                  output$DownloadMSE<- renderUI({
@@ -304,24 +327,31 @@ Results_Server <- function(id,Info) {
                  })
 
 
+
+
                  output$Projection_results <- renderUI({
                    if(is.null(Info$MSEproj)) {
                      return(h4('Projections have not been run yet.', style = "color:red"))
                    } else {
                      ns <- NS(id)
                      tagList(
+                       box(width=12, status='primary', solidHeader = TRUE, height=1050,
+                           title='MSE Results',
                        tabsetPanel(
+
                          tabPanel(h4('Projection Plots', style='color:black;'),
                                   value=1,
                                   tabsetPanel(
                                     tabPanel(h4('Spawning Biomass', style='color:black;'),
-                                             column(8,
-                                                    br(),
-                                                    plotOutput(ns('Biomass_projection_plot'))
-                                             ),
-                                             column(4,
-                                                    htmlOutput(ns('Biomass_text')),
-                                                    htmlOutput(ns('Biomass_opts'))
+                                             fluidRow(
+                                               column(8,
+                                                      br(),
+                                                      plotOutput(ns('Biomass_projection_plot'))
+                                               ),
+                                               column(4,
+                                                      htmlOutput(ns('Biomass_text')),
+                                                      htmlOutput(ns('Biomass_opts'))
+                                             )
                                              )
                                     ),
                                     tabPanel(h4('Catch', style='color:black;'),
@@ -348,38 +378,35 @@ Results_Server <- function(id,Info) {
                          ),
                          tabPanel(h4('Trade-Off Plots', style='color:black;'),
                                   value=2,
-                                  br(),
-                                  column(8,
-                                         plotOutput(ns('TradeOff_plot'))
-                                  ),
-                                  column(4,
-                                         h3('Trade-Off Plot'),
-                                         h3('X-Axis'),
-                                         htmlOutput(ns('Xax')),
-                                         htmlOutput(ns('Xopt')),
-
-                                         h3('Y-Axis'),
-                                         htmlOutput(ns('Yax')),
-                                         htmlOutput(ns('Yopt'))
+                                  column(12,
+                                         div(
+                                           TradeOffUI(ns('TO'))
+                                         )
                                   )
                          )
                        )
+                       )
                      )
+
                    }
                  })
 
                  observe({
                    output$Biomass_projection_plot <- renderPlot({
-                     if (!is.null(input$SB_quants))
-                       Projection_plot(Info$MSEproj, 'Spawning Biomass', input$SBopts, input$SB_quants)
+                     MSEproj2 <- Sub(Info$MSEproj, MPs=input$B_MP_select)
+                     Projection_plot(MSEproj2, 'Spawning Biomass', input$SBopts, input$SB_quants)
                    },
                    height=proj_height())
                  })
 
+
                  observe({
                    output$Catch_projection_plot <- renderPlot({
-                     if (!is.null(input$Catch_quants))
-                       Projection_plot(Info$MSEproj, 'Catch', input$Catchopts, input$Catch_quants)
+                     if (!is.null(input$Catch_quants)) {
+                       MSEproj2 <- Sub(Info$MSEproj, MPs=input$C_MP_select)
+                       Projection_plot(MSEproj2, 'Catch', input$Catchopts, input$Catch_quants)
+                     }
+
                    },
                    height=proj_height())
                  })
@@ -387,8 +414,11 @@ Results_Server <- function(id,Info) {
 
                  observe({
                    output$Rec_projection_plot <- renderPlot({
-                     if (!is.null(input$Rec_quants))
-                       Projection_plot(Info$MSEproj, 'Recruitment', 0, input$Rec_quants)
+                     if (!is.null(input$Rec_quants)) {
+                       MSEproj2 <- Sub(Info$MSEproj, MPs=input$R_MP_select)
+                       Projection_plot(MSEproj2, 'Recruitment', 0, input$Rec_quants)
+                     }
+
                    },
                    height=proj_height())
                  })
@@ -489,6 +519,10 @@ Results_Server <- function(id,Info) {
                    tagList(
                      bsCollapse(id = ns("Biocollapse"),
                                 bsCollapsePanel("Plot Controls (click to expand)", style = "primary",
+                                                checkboxGroupInput(ns('B_MP_select'),
+                                                                   label='Filter MPs',
+                                                                   selected=Info$MSEproj@MPs,
+                                                                   choices=Info$MSEproj@MPs),
                                                 radioButtons(ns('SBopts'), 'Relative to:',
                                                              choices=c('SB0', 'SBMSY')),
                                                 sliderInput(ns('SB_quants'),
@@ -509,6 +543,10 @@ Results_Server <- function(id,Info) {
                    tagList(
                      bsCollapse(id = ns("Catchcollapse"),
                                 bsCollapsePanel("Plot Controls (click to expand)", style = "primary",
+                                                checkboxGroupInput(ns('C_MP_select'),
+                                                                   label='Filter MPs',
+                                                                   selected=Info$MSEproj@MPs,
+                                                                   choices=Info$MSEproj@MPs),
                                                 checkboxInput(ns('Catchopts'), 'Include removals?',
                                                               value=FALSE),
                                                 sliderInput(ns('Catch_quants'),
@@ -529,6 +567,10 @@ Results_Server <- function(id,Info) {
                    tagList(
                      bsCollapse(id = ns("Reccollapse"),
                                 bsCollapsePanel("Plot Controls (click to expand)", style = "primary",
+                                                checkboxGroupInput(ns('R_MP_select'),
+                                                                   label='Filter MPs',
+                                                                   selected=Info$MSEproj@MPs,
+                                                                   choices=Info$MSEproj@MPs),
                                                 sliderInput(ns('Rec_quants'),
                                                             'Percentiles',
                                                             min=50,
@@ -545,128 +587,6 @@ Results_Server <- function(id,Info) {
 
 
 
-                 output$TradeOff_plot <- renderPlot({
-                   Xaxis <- list()
-                   Xaxis$Year <- input$x_year
-                   Xaxis$Var <- input$x_var
-                   Xaxis$Reference <- input$x_reference
-                   Xaxis$Metric <- input$x_metric
-                   IncEx <- input$x_err
-                   if (length(Xaxis$Reference)<1) Xaxis$Reference <- 0
-                   if(length(IncEx)<1) IncEx <- FALSE
-
-                   Yaxis <- list()
-                   Yaxis$Year <- input$y_year
-                   Yaxis$Var <- input$y_var
-                   Yaxis$Reference <- input$y_reference
-                   Yaxis$Metric <- input$y_metric
-                   IncEy <- input$y_err
-                   if (length(Yaxis$Reference)<1) Yaxis$Reference <- 0
-                   if(length(IncEy)<1) IncEy <- FALSE
-
-                   TradeOff_plot(Info$MSEproj, Xaxis, Yaxis, IncEx, IncEy)
-                 },
-                 width=function() {
-                   dims <- window_dims()
-                   dims[1]*0.3
-                 },
-                 height=function() {
-                   dims <- window_dims()
-                   dims[1]*0.3
-                 })
-
-
-                 output$Xax <- renderUI({
-                   ns <- NS(id)
-                   if (class(Info$MSEproj) == 'MSE') {
-                     Yr1 <- Current_Year + 1
-                     Yr2 <- Current_Year + Info$MSEproj@proyears
-
-                     tagList(
-                       selectInput(ns('x_var'),
-                                   label = 'Variable',
-                                   choices = c('SB/SB0', 'SB/SBMSY', 'Catch', 'AAVY', 'AAVE')),
-                       sliderInput(ns('x_year'),
-                                   label = h4("Years"),
-                                   min = Yr1,
-                                   max = Yr2,
-                                   value = c(Yr1, Yr2),
-                                   step=1,
-                                   sep=''),
-                       selectInput(ns('x_metric'),
-                                   label = 'Metric',
-                                   choices = c('Median', 'Probability'))
-                     )
-                   }
-                 })
-                 output$Xopt <- renderUI({
-                   ns <- NS(id)
-                   if (class(Info$MSEproj) == 'MSE') {
-                     if (length(input$x_metric)>0) {
-                       if (input$x_metric == 'Median') {
-                         return(tagList(
-                           checkboxInput(ns('x_err'), 'Include error bars?',
-                                         value=FALSE)
-                         ))
-                       }
-                       if(input$x_metric == 'Probability') {
-                         return(tagList(
-                           numericInput(ns('x_reference'), 'Reference Value',
-                                        min=0,
-                                        value=0.5,
-                                        step=0.1)
-                         ))
-                       }
-                     }
-                   }
-                 })
-
-                 output$Yax <- renderUI({
-                   ns <- NS(id)
-                   if (class(Info$MSEproj) == 'MSE') {
-                     Yr1 <- Current_Year + 1
-                     Yr2 <- Current_Year + Info$MSEproj@proyears
-
-                     tagList(
-                       selectInput(ns('y_var'),
-                                   label = 'Variable',
-                                   choices = c('SB/SB0', 'SB/SBMSY', 'Catch', 'AAVY', 'AAVE'),
-                                   selected='Catch'),
-                       sliderInput(ns('y_year'),
-                                   label = h4("Years"),
-                                   min = Yr1,
-                                   max = Yr2,
-                                   value = c(Yr1, Yr2),
-                                   step=1,
-                                   sep=''),
-                       selectInput(ns('y_metric'),
-                                   label = 'Metric',
-                                   choices = c('Median', 'Probability'))
-                     )
-                   }
-                 })
-
-                 output$Yopt <- renderUI({
-                   ns <- NS(id)
-                   if (class(Info$MSEproj) == 'MSE') {
-                     if (length(input$y_metric)>0) {
-                       if (input$y_metric == 'Median') {
-                         return(tagList(
-                           checkboxInput(ns('y_err'), 'Include error bars?',
-                                         value=FALSE)
-                         ))
-                       }
-                       if(input$y_metric == 'Probability') {
-                         return(tagList(
-                           numericInput(ns('y_reference'), 'Reference Value',
-                                        min=0,
-                                        value=0.5,
-                                        step=0.1)
-                         ))
-                       }
-                     }
-                   }
-                 })
 
 
                  output$downloadMSE <- downloadHandler(

@@ -14,7 +14,7 @@ FPI_UI <- function(id, label="Inputs") {
   )
 }
 
-FPI_Server <- function(id, Info, FPI_2) {
+FPI_Server <- function(id, Info, FPI_2, window_dims) {
   moduleServer(id,
                function(input, output, session) {
 

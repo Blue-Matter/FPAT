@@ -58,13 +58,25 @@ server <- function(input, output, session) {
   # Server calls
   Home_Server('home')
   Load_Server('load', Info=Info, Toggles=Toggles)
-  FPI_Server('FPI',Info=Info, FPI_2=FPI_2)
-  Dynamics_Server('dynamics', Info=Info, Toggles=Toggles)
-  Results_Server('results',Info=Info)
+  FPI_Server('FPI',Info=Info, FPI_2=FPI_2, window_dims=window_dims)
+  Dynamics_Server('dynamics', Info=Info, Toggles=Toggles, window_dims=window_dims)
+  Results_Server('results',Info=Info, window_dims=window_dims)
 
-  USERID<-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
-  SessionID<-paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])
+  # Log stuff
+  USERID <-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
+  SessionID <- paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])
   output$SessionID<-renderText(SessionID)
+
+  AM <<-function(newtext)   Log_text$text<-paste(newtext, Log_text$text, sep = "\n")
+  Log_text <- reactiveValues(text=paste0("======= Start of Session ======= \nSession ID: ",SessionID,"\nUser ID: ",USERID))
+  output$Log <- renderText(Log_text$text)
+  output$Download_Log <-downloadHandler(
+    filename = function(){"FPAT_Log.txt"},
+    content = function(file) {
+      writeLines(paste(Log_text$text, collapse = ", "), file)
+    }
+  )
+
 
   output$package_versions <- renderUI({
     tagList(

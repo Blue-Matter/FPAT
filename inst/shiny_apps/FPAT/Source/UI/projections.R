@@ -16,7 +16,7 @@ Results_UI <- function(id, label="Results") {
   )
 }
 
-Results_Server <- function(id,Info) {
+Results_Server <- function(id,Info, window_dims) {
   moduleServer(id,
                function(input, output, session) {
 

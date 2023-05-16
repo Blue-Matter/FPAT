@@ -16,7 +16,7 @@ Dynamics_UI <- function(id, label="Fishery Dynamics") {
 }
 
 
-Dynamics_Server <- function(id, Info, Toggles) {
+Dynamics_Server <- function(id, Info, Toggles, window_dims) {
   moduleServer(id,
                function(input, output, session) {
 

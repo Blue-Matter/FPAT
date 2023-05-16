@@ -4,7 +4,6 @@
 #  mera<-readRDS("G:/Shared drives/BM shared/1. Projects/MERA/MERA_TESTS_2021/TFH/Tiger_flathead.mera")
 
 fetchOM<-function(Info, Toggles, session){
-  print('here')
   # reset Info
   Info$sheets=NULL       # Sheet names
   Info$Summary=NULL       # FPI summary tab

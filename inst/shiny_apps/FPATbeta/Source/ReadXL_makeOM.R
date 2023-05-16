@@ -34,6 +34,7 @@ fetchOM<-function(Info, Toggles, session){
   }
 
   # Load the file
+
   Info$sheets <- readxl::excel_sheets(Info$file$datapath)
 
   Info <- Check_Sheets(Info)
@@ -52,7 +53,7 @@ fetchOM<-function(Info, Toggles, session){
     return(0)
   } else {
     # make the operating model
-    Info$OM<-try(makeOM(Info), silent=TRUE)
+    Info$OM<- try(makeOM(Info), silent=TRUE)
 
     if (class(Info$OM)=='OM') {
       # OM successfully loaded
@@ -163,7 +164,7 @@ makeOM <- function(Info) {
 
   set.seed(1001)
   sheets <- Info$sheets
-  Data <- Info$Data
+  Data <<- Info$Data
   openMSE.Qs <- Info$openMSE.Qs
   FPI.Inputs <- Info$FPI.Inputs
   FPI.Cover <- Info$FPI.Cover
@@ -210,7 +211,7 @@ makeOM <- function(Info) {
   OM<-Replace(OM,temp,Sub="Obs")
 
   OM@cpars<-list()
-
+  OM <<- OM
   # ---- Fishery characteristics ---------------------------------------------------------------------------
 
   # --- Biological --------------------
@@ -462,8 +463,6 @@ makeOM <- function(Info) {
   OM@cpars$MPA[,3]<-0
 
   OM@cpars$Asize <- Asize
-
-  OM <<- OM
 
   # ! Initial depletion defaults to unfished !
   asslist$InitD <- "Initial historical depletion was assumed to be 1 (starting from unfished conditions)."

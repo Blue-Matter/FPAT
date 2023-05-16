@@ -62,3 +62,9 @@ Home_UI <- function(id, label="settings") {
   )
 
 }
+
+Home_Server <- function(id, Info, Toggles) {
+  moduleServer(id,
+               function(input, output, session) {
+               })
+}

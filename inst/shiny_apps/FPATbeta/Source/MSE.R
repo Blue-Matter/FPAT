@@ -1,11 +1,8 @@
 
 runProj<-function(Info){
   withProgress(message="Running test of management options",value=0, {
-    MPs_out <<- Info$MPsel
-    Histout <<- InfoMSEhist
     Info$MSEproj<-Project(Info$MSEhist,MPs=Info$MPsel, extended = T)
-
-    # out <<- Info$MSEproj
+    out <<- Info$MSEproj
   })
 }
 
@@ -127,6 +124,7 @@ Projection_plot <- function(MSE, Var=NULL, opt=NULL, quant1=80) {
     if (Var =='Recruitment') {
       ylab <- 'Relative Recruitment'
       cols <- 4
+      var <- 'Recruitment'
       DF <- df %>% select(Sim, MP, Year, all_of(var)) %>%
         tidyr::pivot_longer(cols=all_of(cols))
     }
@@ -192,7 +190,204 @@ subsetdf <- function(df, axis) {
 
 }
 
+TradeOff_plot2 <- function(MSE) {
+  if (class(MSE) == 'MSE') {
+    df <- MakeDF(MSE)
 
+    # B/BMSY vs LTY
+    Xaxis <- list()
+    Xaxis$Var <- 'SB/SBMSY'
+    Xaxis$Year <- tail(unique(df$Year), 10)
+    Xaxis$Metric <- 'Median'
+    Xax <- subsetdf(df, Xaxis)
+    Xax$lab[1] <- paste(Xax$lab[1], '(last 10 years)')
+
+    Yaxis <- list()
+    Yaxis$Var <- 'Catch'
+    Yaxis$Year <- tail(unique(df$Year), 10)
+    Yaxis$Metric <- 'Median'
+    Yax <- subsetdf(df, Yaxis)
+    Yax$lab[1] <- paste(Yax$lab[1], '(last 10 years)')
+
+    DF <- data.frame(MP=Xax$MP,
+                     x=Xax$val, y=Yax$val,
+                     xlow=Xax$Low, xhi=Xax$Hi,
+                     ylow=Yax$Low, yhi=Yax$Hi,
+                     xlab=Xax$lab[1],
+                     ylab=Yax$lab[1],
+                     xerror=Xax$error_bars[1],
+                     yerror=Yax$error_bars[1])
+
+    if (nrow(DF)>0) {
+      if (!incEx) DF$xerror <- FALSE
+      if (!incEy) DF$yerror <- FALSE
+
+      p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
+        geom_point() +
+        ggrepel::geom_text_repel(aes(label=MP),size=6)
+
+      p <-  p +
+        theme_bw() +
+        expand_limits(x=c(0,1), y=c(0,1)) +
+        guides(color='none') +
+        labs(x=DF$xlab[1],
+             y=DF$ylab[1])
+
+      p1 <- p + theme(axis.text=element_text(size=12),
+                axis.title=element_text(size=16))
+
+
+    }
+
+    # B/B0 vs LTY
+    Xaxis <- list()
+    Xaxis$Var <- 'SB/SB0'
+    Xaxis$Year <- tail(unique(df$Year), 10)
+    Xaxis$Metric <- 'Median'
+    Xax <- subsetdf(df, Xaxis)
+    Xax$lab[1] <- paste(Xax$lab[1], '(last 10 years)')
+
+    Yaxis <- list()
+    Yaxis$Var <- 'Catch'
+    Yaxis$Year <- tail(unique(df$Year), 10)
+    Yaxis$Metric <- 'Median'
+    Yax <- subsetdf(df, Yaxis)
+    Yax$lab[1] <- paste(Yax$lab[1], '(last 10 years)')
+
+    DF <- data.frame(MP=Xax$MP,
+                     x=Xax$val, y=Yax$val,
+                     xlow=Xax$Low, xhi=Xax$Hi,
+                     ylow=Yax$Low, yhi=Yax$Hi,
+                     xlab=Xax$lab[1],
+                     ylab=Yax$lab[1],
+                     xerror=Xax$error_bars[1],
+                     yerror=Yax$error_bars[1])
+
+    if (nrow(DF)>0) {
+      if (!incEx) DF$xerror <- FALSE
+      if (!incEy) DF$yerror <- FALSE
+
+      p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
+        geom_point() +
+        ggrepel::geom_text_repel(aes(label=MP),size=6)
+
+      p <-  p +
+        theme_bw() +
+        expand_limits(x=c(0,1), y=c(0,1)) +
+        guides(color='none') +
+        labs(x=DF$xlab[1],
+             y=DF$ylab[1])
+
+      p2 <- p + theme(axis.text=element_text(size=12),
+                      axis.title=element_text(size=16))
+
+
+    }
+
+
+    # STY vs LTY
+    Xaxis <- list()
+    Xaxis$Var <- 'Catch'
+    Xaxis$Year <- head(unique(df$Year), 10)
+    Xaxis$Metric <- 'Median'
+    Xax <- subsetdf(df, Xaxis)
+    Xax$lab[1] <- paste(Xax$lab[1], '(first 10 years)')
+
+    Yaxis <- list()
+    Yaxis$Var <- 'Catch'
+    Yaxis$Year <- tail(unique(df$Year), 10)
+    Yaxis$Metric <- 'Median'
+    Yax <- subsetdf(df, Yaxis)
+    Yax$lab[1] <- paste(Yax$lab[1], '(last 10 years)')
+
+    DF <- data.frame(MP=Xax$MP,
+                     x=Xax$val, y=Yax$val,
+                     xlow=Xax$Low, xhi=Xax$Hi,
+                     ylow=Yax$Low, yhi=Yax$Hi,
+                     xlab=Xax$lab[1],
+                     ylab=Yax$lab[1],
+                     xerror=Xax$error_bars[1],
+                     yerror=Yax$error_bars[1])
+
+    if (nrow(DF)>0) {
+      if (!incEx) DF$xerror <- FALSE
+      if (!incEy) DF$yerror <- FALSE
+
+      p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
+        geom_point() +
+        ggrepel::geom_text_repel(aes(label=MP),size=6)
+
+      p <-  p +
+        theme_bw() +
+        expand_limits(x=c(0,1), y=c(0,1)) +
+        guides(color='none') +
+        labs(x=DF$xlab[1],
+             y=DF$ylab[1])
+
+      p3 <- p + theme(axis.text=element_text(size=12),
+                      axis.title=element_text(size=16))
+
+
+    }
+
+    # AAVY vs AAVE
+
+    Xaxis <- list()
+    Xaxis$Var <- 'AAVY'
+    Xaxis$Year <- range(df$Year)
+    Xaxis$Year[1] <- Xaxis$Year[1] +1
+    Xaxis$Metric <- 'Median'
+    Xaxis$Reference <- 0.2
+    Xax <- calcVar(MSE, Xaxis)
+
+
+    Yaxis <- list()
+    Yaxis$Var <- 'AAVE'
+    Yaxis$Year <- range(df$Year)
+    Yaxis$Year[1] <- Yaxis$Year[1] +1
+    Yaxis$Metric <- 'Median'
+    Yaxis$Reference <- 0.2
+    Yax <- calcVar(MSE, Xaxis)
+
+    DF <- data.frame(MP=Xax$MP,
+                     x=Xax$val, y=Yax$val,
+                     xlow=Xax$Low, xhi=Xax$Hi,
+                     ylow=Yax$Low, yhi=Yax$Hi,
+                     xlab=Xax$lab[1],
+                     ylab=Yax$lab[1],
+                     xerror=Xax$error_bars[1],
+                     yerror=Yax$error_bars[1])
+
+    if (nrow(DF)>0) {
+      if (!incEx) DF$xerror <- FALSE
+      if (!incEy) DF$yerror <- FALSE
+
+      p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
+        geom_point() +
+        ggrepel::geom_text_repel(aes(label=MP),size=6)
+
+      p <-  p +
+        theme_bw() +
+        expand_limits(x=c(0,1), y=c(0,1)) +
+        guides(color='none') +
+        labs(x=DF$xlab[1],
+             y=DF$ylab[1])
+
+      p4 <- p + theme(axis.text=element_text(size=12),
+                      axis.title=element_text(size=16))
+
+
+    }
+  }
+
+  cowplot::plot_grid(plotlist=list(p1,p2,p3,p4), nrow=2)
+
+
+
+
+
+
+}
 TradeOff_plot <- function(MSE, Xaxis=NULL, Yaxis=NULL, incEx=TRUE, incEy=TRUE) {
 
   MSE <<- MSE
@@ -284,10 +479,18 @@ makeVlab <- function(axis) {
 calcVar <- function(MSE, axis) {
   Yrs <- seq(Current_Year+1, by=1, length.out=MSE@proyears)
   pm <- get(axis$Var)(MSE, Yrs= match(axis$Year, Yrs))
-  median <- apply(pm@Stat, 2, median)
-  low <- apply(pm@Stat, 2, quantile, 0.25)
-  hi  <- apply(pm@Stat, 2, quantile, 0.75)
-  Prob <- apply(pm@Stat<axis$Reference, 2, mean)
+  if(MSE@nMPs == 1) {
+    median <- median(pm@Stat)
+    low <- quantile(pm@Stat, 0.25)
+    hi  <- quantile(pm@Stat, 0.75)
+    Prob <- mean(pm@Stat<axis$Reference)
+  } else {
+    median <- apply(pm@Stat, 2, median)
+    low <- apply(pm@Stat, 2, quantile, 0.25)
+    hi  <- apply(pm@Stat, 2, quantile, 0.75)
+    Prob <- apply(pm@Stat<axis$Reference, 2, mean)
+  }
+
   metric <- axis$Metric
 
   if (axis$Metric=='Median') {
