@@ -12,7 +12,7 @@ library(shinyalert)
 library(openMSE)
 library(cowplot)
 
-source('home.R')
+source('home.r')
 source('load.R')
 source('FPI.R')
 source('dynamics.R')
