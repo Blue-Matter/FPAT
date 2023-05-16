@@ -219,8 +219,8 @@ TradeOff_plot2 <- function(MSE) {
                      yerror=Yax$error_bars[1])
 
     if (nrow(DF)>0) {
-      if (!incEx) DF$xerror <- FALSE
-      if (!incEy) DF$yerror <- FALSE
+      DF$xerror <- FALSE
+      DF$yerror <- FALSE
 
       p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
         geom_point() +
@@ -264,8 +264,8 @@ TradeOff_plot2 <- function(MSE) {
                      yerror=Yax$error_bars[1])
 
     if (nrow(DF)>0) {
-      if (!incEx) DF$xerror <- FALSE
-      if (!incEy) DF$yerror <- FALSE
+      DF$xerror <- FALSE
+      DF$yerror <- FALSE
 
       p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
         geom_point() +
@@ -281,9 +281,7 @@ TradeOff_plot2 <- function(MSE) {
       p2 <- p + theme(axis.text=element_text(size=12),
                       axis.title=element_text(size=16))
 
-
     }
-
 
     # STY vs LTY
     Xaxis <- list()
@@ -310,8 +308,8 @@ TradeOff_plot2 <- function(MSE) {
                      yerror=Yax$error_bars[1])
 
     if (nrow(DF)>0) {
-      if (!incEx) DF$xerror <- FALSE
-      if (!incEy) DF$yerror <- FALSE
+      DF$xerror <- FALSE
+      DF$yerror <- FALSE
 
       p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
         geom_point() +
@@ -359,8 +357,8 @@ TradeOff_plot2 <- function(MSE) {
                      yerror=Yax$error_bars[1])
 
     if (nrow(DF)>0) {
-      if (!incEx) DF$xerror <- FALSE
-      if (!incEy) DF$yerror <- FALSE
+      DF$xerror <- FALSE
+      DF$yerror <- FALSE
 
       p <- ggplot(DF, aes(x=x, y=y, color=MP)) +
         geom_point() +

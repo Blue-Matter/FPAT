@@ -1,31 +1,66 @@
 /* Default styles for pages */
 
-
-.tabbable > .nav > li > a  {
-   background-color: white !important;
-   color:black !important;
-   }
-.tabbable > .nav > li[class=active] > a  {
-   background-color: #37638a !important;
-   color:white !important;
-   }
+/* https://fonts.google.com/?preview.text=SLICK&preview.text_type=custom */
+/* font for title */
+@import url('//fonts.googleapis.com/css?family=Cairo|Cabin:400,700');
 
 
-a:visited {
-  color: purple;
+h3 {
+  font-family: 'Cairo',cursive;
 }
 
-.main-sidebar {
+h2 {
+  font-family: 'Cairo',cursive;
+
+}
+
+h1 {
+  font-family: 'Cairo',cursive;
+}
+
+p {
+   font-size: 16px;
+}
+
+li {
   font-size: 16px;
 }
 
+.left_menu h5{
+  text-align: left;
+  padding-left: 8px;
+}
 
-.vertical-tab-panel h4 {
-  font-size: 12px;
+.box h3 {
 }
 
 
-/* pages */
+/* logo when hovered */
+.skin-blue .main-header .logo:hover {
+  background-color: #FFFFFF;
+
+}
+
+/* Background color of nav bar */
+.skin-blue .main-header .navbar {
+  background-color: #FFFFFF;
+}
+
+/* Background color of side bar */
+.skin-blue .main-sidebar {
+  background-color: #FFFFFF;
+}
+
+/* active selected tab in the sidebarmenu */
+.skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+  background-color: #E1E2E4;
+}
+
+/* body */
+.content-wrapper, .right-side {
+  background-color: #FFFFFF;
+}
+
 
 .page_reading {
   padding-top: 15px;
@@ -126,45 +161,6 @@ pre {
   bottom: .45em;
 
 }
-/*
-
-
- /*
-
-.non_tech_filters {
-  float: right;
-}
-*/
-
-
-
-/*
-.perftable {
-  border-style: dashed;
-  border-width: 1px;
-  border-color: olive;
-}
-
-.filled_hex {
-  border-left-style: solid;
-  border-left-color: #D6501C;
-  border-bottom-style: solid;
-  border-bottom-color: #D6501C;
-  border-width: 1px;
-  padding-left: 15px;
-}
-
-.spider_plot {
-  border-left-style: solid;
-  border-left-color: #D6501C;
-  border-right-style: solid;
-  border-right-color: #D6501C;
-  border-width: 1px;
-  padding-left: 15px;
-}
-
-*/
-
 
 
 .page_title #title {
@@ -199,11 +195,6 @@ pre {
 
 .page_reading p {
   color: black;
-}
-
-
-.page_glossary h3 {
-  color: #D6501C;
 }
 
 
@@ -250,5 +241,13 @@ pre {
 .bootstrap-switch .bootstrap-switch-label {
     display: inline-block;
     vertical-align: baseline;
+
+
+.btn-dropdownbutton{
+  background-color: #182b4c !important;
+  color: #ffffff
+}
+
+
 
 

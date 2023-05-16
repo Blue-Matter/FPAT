@@ -1,93 +1,142 @@
+HelpUI <- function(id, label="settings") {
 
-ui <- fluidPage(style="position: absolute;  padding-left: 40px; padding-right: 40px;",
+  ns <- NS(id)
+  tagList(
+    fluidRow(
+      p('help')
 
-          useShinydashboard(),
-          includeScript(path = "www/js/js4checkbox.js"),
-          includeScript(path = "www/js/index.js"),
-          tags$head(
-            tags$link(rel='stylesheet', type='text/css', href='styles.css'),
-            tags$link(href="fa/css/all.css", rel="stylesheet"), # font-awesome
-            tags$style(HTML("#SessionID{font-size:12px;}")),
-            tags$script('
-        var dimension = [0, 0];
-        $(document).on("shiny:connected", function(e) {
-            dimension[0] = window.innerWidth;
-            dimension[1] = window.innerHeight;
-            Shiny.onInputChange("dimension", dimension);
-        });
-        $(window).resize(function(e) {
-            dimension[0] = window.innerWidth;
-            dimension[1] = window.innerHeight;
-            Shiny.onInputChange("dimension", dimension);
-        });
-    ')
-          ),
+    )
+  )
+}
+
+SettingsUI <- function(id, label="settings") {
+
+  ns <- NS(id)
+  tagList(
+    fluidRow(
+      p('Settings')
+
+    )
+  )
+}
 
 
-          # === HEADER =================================================================
-          Header_UI('header'),
 
-          # === MAIN WINDOW ============================================================
-          column(12, # General tab panel
-                 div(class='left_menu',
-                     verticalTabsetPanel(id = "NonTech",selected=1, color='#4291be',
+# -- header ----
+header <- shinydashboardPlus::dashboardHeader(
+  leftUi = tagList(
+    dropdownButton(
+      label = "Help",
+      icon = icon("info"),
+      status = "primary",
+      circle = FALSE,
+      uiOutput("language")
+    )),
+  controlbarIcon=shiny::icon('gears')
+)
 
-                                         verticalTabPanel(value=1,
-                                                          h5(strong("Home")),
-                                                          height="400px",
-                                                          Home_UI('Home1'),
-                                                          box_height='55px'),
+# -- rhs controlbar ----
+controlbar <- dashboardControlbar(
+  conditionalPanel(
+    condition="input.sidebar=='projections'",
+    controlbarMenu(
+      id = "menu",
+      controlbarItem(
+        "Tab 1",
+        "Welcome to tab 1"
+      ),
+      controlbarItem(
+        "Tab 2",
+        "Welcome to tab 2"
+      )
+    )
+  )
 
-                                         verticalTabPanel(value=2,
-                                                          h5(strong("1. Load")),
-                                                          Load_UI('Load1'),
-                                                          box_height='55px'),
-
-                                         verticalTabPanel(value=3,
-                                                          h5(strong("2. FPI Scores")),
-                                                          FPI_UI('FPI1'),
-                                                          box_height='55px'),
-
-                                         verticalTabPanel(value=4,
-                                                          h5(strong("3. Fishery Dynamics")),
-                                                          HistDynamics_UI('dynamics'),
-                                                          box_height='55px'),
-
-                                         verticalTabPanel(value=5,
-                                                          h5(strong("4. Projections")),
-                                                          Results_UI('Results1'),
-                                                          box_height='55px'),
-                                         contentWidth=11) # end of tabsetpanel
-                 ),
-                 # br(),
-                 # downloadButton("Download_Log","Download Log",style="height:28px")
-
-          ), # end of main window for general
+)
 
 
-          # === LOG ====================================================================
 
-          column(12,
-                 br(),
-                 # verbatimTextOutput("Log",placeholder=T),
-                 # bsTooltip("Log","Application Log"),
-                 downloadButton("Download_Log","Download Log",style="height:28px"),
-                 hr()
-          ),
+# -- lhs sidebar ----
+sidebar <- dashboardSidebar(
+  collapsed = TRUE,
+  sidebarMenu(id='sidebar',
+              menuItem("Home", tabName = "home", icon = icon("house")),
+              menuItem("1. Load", tabName = "load", icon = icon("upload")),
+              menuItem("2. FPI Scores", tabName = "fpi", icon = icon("chart-bar")),
+              menuItem("3. Fishery Dynamics", tabName = "dynamics", icon = icon("chart-scatter")),
+              menuItem("4. Projections", tabName = "projections", icon = icon("chart-line"))
+  )
+)
 
 
-          # === SESSION INFO & COPYRIGHT ===============================================
-          column(12, style="height:40px;  text-align: center;",
-                 br(),
-                 textOutput("SessionID"),
-                 h6(
-                   "Copyright", HTML("&#169;"),
-                   a(paste("Blue Matter Science Ltd,", format(Sys.Date(), "%Y")),
-                     href="https://www.bluematterscience.com/", target="_blank")
-                 ),
-                 htmlOutput('package_versions'),
-                 br()
-          )
+# -- body ----
+body <- dashboardBody(
+  tags$head(
+    includeScript(path = "www/js/js4checkbox.js"),
+    includeScript(path = "www/js/index.js"),
+    tags$link(rel='stylesheet', type='text/css', href='styles.css'),
+    tags$link(href="fa/css/all.css", rel="stylesheet"), # font-awesome
+    tags$link(rel="shortcut icon", href="favicon.ico"),
 
-) # end of fluid page
+    tags$style(HTML("#SessionID{font-size:12px;}")),
+    tags$style(HTML("/* https://fonts.google.com/?preview.text=SLICK&preview.text_type=custom */
+        @import url('//fonts.googleapis.com/css?family=Cairo|Cabin:400,700');
+        /* Font of SLICK title */
+      ")),
+    tags$script(
+      'var dimension = [0, 0];
+    $(document).on("shiny:connected", function(e) {
+      dimension[0] = window.innerWidth;
+      dimension[1] = window.innerHeight;
+      Shiny.onInputChange("dimension", dimension);
+    });
+    $(window).resize(function(e) {
+      dimension[0] = window.innerWidth;
+      dimension[1] = window.innerHeight;
+      Shiny.onInputChange("dimension", dimension);
+    });
+    '),
+    tags$script("
+        var openTab = function(tabName){
+          $('a', $('.sidebar')).each(function() {
+            if(this.getAttribute('data-value') == tabName) {
+              this.click()
+            };
+          });
+        }
+      ")
 
+  ),
+  tabItems(
+    tabItem(tabName = "home",
+            Home_UI('home')
+    ),
+    tabItem(tabName = "load",
+            Load_UI('load')
+    ),
+    tabItem(tabName = "fpi",
+            FPI_UI('FPI')
+    ),
+    tabItem(tabName = "dynamics",
+            Dynamics_UI('dynamics')
+    ),
+    tabItem(tabName = "projections",
+            Results_UI('results')
+    )
+  )
+)
+
+
+# -- page ----
+
+dashboardPage(
+  skin = "blue-light",
+  header=header,
+  sidebar=sidebar,
+  body=body,
+  controlbar=NULL,
+  title='FPAT',
+  dashboardFooter(left =  div(htmlOutput('package_versions'), textOutput("SessionID")),
+                  right = h6("Copyright", HTML("&#169;"), tags$a(href='https://bluematterscience.com/',
+                                 target="_blank", paste("Blue Matter Science Ltd.", format(Sys.Date(), "%Y")))))
+)

@@ -1,34 +1,25 @@
-packages <- c('dplyr', 'DT', 'ggplot2', 'ggrepel', 'shinyWidgets',
-              'shiny', 'shinyBS', 'shinydashboard', 'shinyalert',
-              'readxl', 'stringr', 'openMSE', 'shinyjs', 'Hmisc')
+library(dplyr)
+library(DT)
+library(ggplot2)
+library(ggrepel)
+library(readxl)
+library(shinyBS)
+library(shinydashboard)
+library(shinydashboardPlus)
+library(shiny.i18n)
+library(shinyWidgets)
+library(shinyjs)
+library(shinyalert)
+library(openMSE)
+library(cowplot)
 
-for (pkg in packages) {
-  req <- require(pkg, character.only = TRUE)
+source('home.R')
+source('load.R')
+source('FPI.R')
+source('dynamics.R')
+source('results.R')
 
-  if (!req) {
-    install.packages(pkg)
-    require(pkg, character.only = TRUE)
-  }
-}
-
-# library(dplyr)
-# library(DT)
-# library(ggplot2)
-# library(ggrepel)
-# library(shinyWidgets)
-# library(shiny)
-# library(shinyBS)
-# library(shinydashboard)
-# library(shinyalert)
-# library(readxl)
-# library(stringr)
-# library(openMSE)
-
-
-#source('../../../R/plotFPIs.R')
-for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl))
-for (fl in list.files("./Source/OM")) source(file.path("./Source/OM", fl),local=T)
-for (fl in list.files("./Source/Misc")) source(file.path("./Source/Misc", fl))
+for (fl in list.files("./Source")) source(file.path("./Source", fl))
 
 
 CheckFPILoaded <- function(Info) {
@@ -191,7 +182,6 @@ Check_Sheets <- function(Info) {
 
   Info
 }
-
 
 # Load indicator descriptions
 IndDesc <- read.csv('Data/Indicator_Descriptions.csv')

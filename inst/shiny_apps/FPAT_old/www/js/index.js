@@ -6,14 +6,11 @@ const customHref = function(link){
         // since it returns an object, iterate over each entries
         Object.entries(links).forEach( (elem, i) => {
 
-                // match value attribute with input var
+                // match data-value attribute with input var
                 if(elem[1].getAttribute("data-value") === link){
 
                         // if match, click link
                         elem[1].click()
                 }
-
         });
 }
-
-

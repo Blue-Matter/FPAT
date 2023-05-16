@@ -1,15 +1,16 @@
+
+
+
 options(shiny.maxRequestSize=1000*1024^2)
 
-
 server <- function(input, output, session) {
-  useShinyjs()
-
-  # ---- Initialize Reactive Values -----
+   # ---- Initialize Reactive Values -----
   Toggles <- reactiveValues(
     FPI_Loaded=FALSE, # FPI loaded?
     OM_Loaded=FALSE, # OM successfully generated?
     Fit=FALSE,    # Model fitted?
     MSE=FALSE)    # MSE run?
+
 
   output$FPI_Loaded <- reactive({ Toggles$FPI_Loaded })
   outputOptions(output, "FPI_Loaded", suspendWhenHidden = FALSE)
@@ -53,21 +54,22 @@ server <- function(input, output, session) {
   )
 
   # dynamic plot dimensions
-  window_dims <- reactive(input$dimension)
+  window_dims <<- reactive(input$dimension)
 
   # Server calls
-  Home_Server('home')
-  Load_Server('load', Info=Info, Toggles=Toggles)
-  FPI_Server('FPI',Info=Info, FPI_2=FPI_2, window_dims=window_dims)
-  Dynamics_Server('dynamics', Info=Info, Toggles=Toggles, window_dims=window_dims)
-  Results_Server('results',Info=Info, window_dims=window_dims)
+  Home_Server('Home1')
+  Load_Server('Load1', Info=Info, Toggles=Toggles)
+  FPI_Server('FPI1',Info=Info, FPI_2=FPI_2)
+  HistDynamics_Server('dynamics', Info=Info, Toggles=Toggles)
+  Results_Server('Results1',Info=Info)
 
-  # Log stuff
-  USERID <-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
-  SessionID <- paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])
+
+  USERID<-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
+  SessionID<-paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])
   output$SessionID<-renderText(SessionID)
 
-  AM <<-function(newtext)   Log_text$text<-paste(newtext, Log_text$text, sep = "\n")
+  # Log stuff
+  AM<<-function(newtext)   Log_text$text<-paste(newtext, Log_text$text, sep = "\n")
   Log_text <- reactiveValues(text=paste0("======= Start of Session ======= \nSession ID: ",SessionID,"\nUser ID: ",USERID))
   output$Log <- renderText(Log_text$text)
   output$Download_Log <-downloadHandler(
@@ -77,18 +79,17 @@ server <- function(input, output, session) {
     }
   )
 
-
   output$package_versions <- renderUI({
     tagList(
       h6(
-        paste("FPAT", packageVersion('FPAT'),
-              "openMSE", packageVersion("openMSE"),
-              "MSEtool", packageVersion("MSEtool"),
-              "DLMtool", packageVersion("DLMtool"),
-              "SAMtool", packageVersion("SAMtool"))
+        paste("openMSE", packageVersion("openMSE"),
+        "MSEtool", packageVersion("MSEtool"),
+        "DLMtool", packageVersion("DLMtool"),
+        "SAMtool", packageVersion("SAMtool"))
 
       )
     )
   })
-}
 
+
+}

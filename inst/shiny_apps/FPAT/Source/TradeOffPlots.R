@@ -42,6 +42,16 @@ TradeOffServer <- function(id, Info, input, window_dims, ...) {
       dims[1]*0.3
     })
 
+    TO_height <- reactiveVal(300)
+
+    observe({
+      if(!is.null(Info$MSEproj)) {
+        dims <- window_dims()
+        plotheight <- dims[1]*0.3
+        TO_height(plotheight)
+      }
+    })
+
     output$TradeOff_plot_group <- renderPlot({
       MSEproj2 <- Sub(Info$MSEproj, MPs=input$TO_MP_select)
       TradeOff_plot2(MSEproj2)
@@ -55,9 +65,6 @@ TradeOffServer <- function(id, Info, input, window_dims, ...) {
       dims[1]*0.3
     })
 
-
-
-
     output$tradeoff <- renderUI({
       ns <- NS(id)
       if(is.null(Info$MSEproj)) {
@@ -69,8 +76,9 @@ TradeOffServer <- function(id, Info, input, window_dims, ...) {
                      fluidRow(
                        column(9,
                               fluidRow(
-                              plotOutput(session$ns('TradeOff_plot_group')
-                              )
+                              plotOutput(session$ns('TradeOff_plot_group'),
+                                                    height=TO_height())
+
                             ),
 
                      ),

@@ -53,7 +53,7 @@ Results_Server <- function(id,Info, window_dims) {
                                     h5('Select the management procedures you wish to test and run the MSE projections.'),
                                     actionButton(ns("runMSE"),label="Run MSE Projections",icon=icon('cogs')),
 
-                                    fileInput(ns("uploadMSE"),label='Load an MSE Object'),
+                                    # fileInput(ns("uploadMSE"),label='Load an MSE Object'),
 
 
                                     htmlOutput(ns('DownloadMSE'))
@@ -320,13 +320,11 @@ Results_Server <- function(id,Info, window_dims) {
                    if(!is.null(Info$MSEproj)) {
                      nMPs <- Info$MSEproj@nMPs
                      if (nMPs > 3) {
-                       plotheight <- 300 + (nMPs-3)*300
+                       plotheight <- (nMPs/3)*300
                      }else plotheight <- 300
                      proj_height(plotheight)
                    }
                  })
-
-
 
 
                  output$Projection_results <- renderUI({
@@ -346,7 +344,7 @@ Results_Server <- function(id,Info, window_dims) {
                                              fluidRow(
                                                column(8,
                                                       br(),
-                                                      plotOutput(ns('Biomass_projection_plot'))
+                                                      plotOutput(ns('Biomass_projection_plot'), height=proj_height())
                                                ),
                                                column(4,
                                                       htmlOutput(ns('Biomass_text')),
@@ -357,7 +355,7 @@ Results_Server <- function(id,Info, window_dims) {
                                     tabPanel(h4('Catch', style='color:black;'),
                                              column(8,
                                                     br(),
-                                                    plotOutput(ns('Catch_projection_plot'))
+                                                    plotOutput(ns('Catch_projection_plot'), height=proj_height())
                                              ),
                                              column(4,
                                                     htmlOutput(ns('Catch_text')),
@@ -367,7 +365,7 @@ Results_Server <- function(id,Info, window_dims) {
                                     tabPanel(h4('Recruitment', style='color:black;'),
                                              column(8,
                                                     br(),
-                                                    plotOutput(ns('Rec_projection_plot'))
+                                                    plotOutput(ns('Rec_projection_plot'), height=proj_height())
                                              ),
                                              column(4,
                                                     htmlOutput(ns('Rec_text')),
@@ -472,7 +470,7 @@ Results_Server <- function(id,Info, window_dims) {
                    quant1 <- input$Catch_quants
                    quant2 <- 100-quant1
 
-                   if (quant1>50) {
+                   if (!is.null(quant1) && quant1>50) {
                      txt <- paste0(tt, ' projection ', p, ' showing the median (line) and ', quant2, 'th and ', quant1, 'th percentiles (shading) of projected catch relative to catch in the most recent year for each MP.')
                    } else {
                      txt <- paste0(tt, ' projection ', p, ' showing the median projected catch relative to catch in the most recent year for each MP.')
@@ -498,7 +496,7 @@ Results_Server <- function(id,Info, window_dims) {
                    quant1 <- input$Rec_quants
                    quant2 <- 100-quant1
 
-                   if (quant1>50) {
+                   if  (!is.null(quant1) && quant1>50) {
                      txt <- paste0(tt, ' projection ', p, ' showing the median (line) and ', quant2, 'th and ', quant1, 'th percentiles (shading) of projected recruitment relative to the average unfished recruitment for each MP.')
                    } else {
                      txt <- paste0(tt, ' projection ', p, ' showing the median projected recruitment relative to the average unfished recruitment for each MP.')
