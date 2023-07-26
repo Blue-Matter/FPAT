@@ -180,7 +180,6 @@ makeOM <- function(Info) {
   OM@proyears<-30
   OM@seed<-1
 
-
   OM@R0<-1e9
   OM@Linf<-c(100,100)
   OM@L50<-NaN
@@ -206,7 +205,7 @@ makeOM <- function(Info) {
   ind <- which(FPI.Inputs[,3] == "Data Availability")
   DataQual <- FPI.Inputs[ind,6]
   if (DataQual < 3 ) temp<-new('OM',Albacore,Generic_Fleet,Imprecise_Biased,Perfect_Imp)
-  if (DataQual == 3) openMSE_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Generic_obs,Perfect_Imp)
+  if (DataQual == 3) openMSE_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Generic_Obs,Perfect_Imp)
   if (DataQual > 3) openMSE_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Precise_Unbiased,Perfect_Imp)
   OM<-Replace(OM,temp,Sub="Obs")
 
