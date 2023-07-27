@@ -205,8 +205,8 @@ makeOM <- function(Info) {
   ind <- which(FPI.Inputs[,3] == "Data Availability")
   DataQual <- FPI.Inputs[ind,6]
   if (DataQual < 3 ) temp<-new('OM',Albacore,Generic_Fleet,Imprecise_Biased,Perfect_Imp)
-  if (DataQual == 3) openMSE_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Generic_Obs,Perfect_Imp)
-  if (DataQual > 3) openMSE_Import$D4 <- temp<-new('OM',Albacore,Generic_Fleet,Precise_Unbiased,Perfect_Imp)
+  if (DataQual == 3) temp<-new('OM',Albacore,Generic_Fleet,Generic_Obs,Perfect_Imp)
+  if (DataQual > 3) temp<-new('OM',Albacore,Generic_Fleet,Precise_Unbiased,Perfect_Imp)
   OM<-Replace(OM,temp,Sub="Obs")
 
   OM@cpars<-list()
