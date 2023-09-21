@@ -1,0 +1,45 @@
+---
+title: "Fisheries Performance Assessment Toolkit"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document
+---
+
+```{=html}
+<style>
+  .col2 {
+    columns: 2 200px;         /* number of columns and width in pixels*/
+    -webkit-columns: 2 200px; /* chrome, safari */
+    -moz-columns: 2 200px;    /* firefox */
+  }
+  .col3 {
+    columns: 3 100px;
+    -webkit-columns: 3 100px;
+    -moz-columns: 3 100px;
+  }
+  .col4 {
+    columns: 4 100px;
+    -webkit-columns: 4 100px;
+    -moz-columns: 4 100px;
+  }
+</style>
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Introduction
+
+Welcome to the Fisheries Performance Assessment Toolkit (FPAT) homepage.
+
+
+## Documents
+
+1. [FPAT App User Guide](FPAT.html) 
+
+
+## Applications
+
+1. [FPAT App](https://shiny.bluematterscience.com/app/fpat) 
+
